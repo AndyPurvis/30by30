@@ -1,0 +1,64 @@
+---
+title: "Data exploration"
+author: "Andy Purvis"
+date: "04/02/2021"
+output:
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Exploring the IAM land-use data from the '30 by 30' scenarios
+## Source of data
+These IAM outputs were downloaded from https://drive.google.com/drive/folders/1k6mVe8rQc29dh4MZkxhPCDuhp38dV_dF on 2021-02-03, and are described in two emails from Anthony Waldron. The unzipped data, in its original folder structure, is within the "/data" folder.
+
+## Load the required libraries and functions
+The functions are, for now, a straight copy of the code used in the analysis for the Urgency of Biodiversity Loss.
+```{r, load, echo=FALSE, cache=TRUE}
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+```
+# Read an example data set
+As an example, I will read one of the action scenarios from MAgPIE. MAgPIE is the IAM whose output I am most likely to be able to use easily, but the reference scenario would be a bad choice as not all land uses would be represented.
+
+```{r, read_example, echo=FALSE, cache=TRUE}
+eg_data <- nc_open("data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+cat("Metadata for the file:\n")
+print(eg_data) #Metadata
+cat("\nWhich years have land-use data:\n")
+print(eg_data$dim$time$vals) # Which years
+cat("\nList of land-use classes\n")
+print(strsplit(eg_data$dim$lc_class$units, "/"))
+```
+# Read the same scenario from a different IAM
+This is necessary to check whether all the IAMs are using the same land-use classes
+```{r, read_example, echo=FALSE, cache=TRUE}
+eg2_data <- nc_open("data/IAM outputs for 30 by 30 scenarios/IMAGE/BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+cat("Metadata for the file:\n")
+print(eg2_data) #Metadata
+cat("\nWhich years have land-use data:\n")
+print(eg2_data$dim$time$vals) # Which years
+cat("\nList of land-use classes\n")
+print(strsplit(eg2_data$dim$lc_class$units, "/"))
+```

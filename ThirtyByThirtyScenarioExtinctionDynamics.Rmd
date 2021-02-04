@@ -1,0 +1,950 @@
+---
+title: "Extinction dynamics under scenarios of no action, immediate action and delayed action"
+author: "Andy Purvis andy.purvis@nhm.ac.uk"
+date: "23 June 2020"
+output:
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Estimating the consequences for numbers of species extinctions of early-intervention vs late-intervention scenarios
+
+## Summary
+Combining global spatially-resolved estimates of land-use history, the equilibrial relationship between species number and area, and dynamic parameters from a recent meta-analysis, this analysis infers the historical trajectory of endemic species diversity and the locations of present-day endemic species that constitute the extinction debt; i.e., endemic species lacking sufficient habitat to persist in the long term. Using the best available estimates of dynamic parameters, the analysis estimates that about 11% of endemic species have already been extirpated by habitat loss, and that the current extinction debt comprises 7.7% of present-day endemic species. The extinction debt is concentrated in tropical regions that are naturally productive, are topographically complex and have experienced widespread recent habitat loss. These regions are therefore the top targets for restoration to prevent extinctions of endemic species, and the extinction debt is the potential biodiversity gain. Under a baseline scenario based on Shared Socioeconomic Pathway 2, 3% of extant endemic species are expected to go extinct by 2050 -- more than went extinct between 850 and 1850. Despite a projected increase in the extent of natural habitat in the second half of this century, 7.1% of endemic species are projected to die out by 2100 under this baseline scenario. The Early restoration scenario reduces the expected number of extinctions between 2020 and 2050 by nearly 20%, whereas the Late restoration scenario reduces it by just over 10%, preventing only about 55% as many of the baseline extinctions as the Early scenario does. Note that the U.K. is notable in having particularly few endemic species: it never had many, and its long history of intensive land use would have eradicated them even if it had.
+
+## Introduction
+Land-use change -- habitat loss -- is the major driver of terrestrial biodiversity loss globally (Diaz et al. 2019 Science). As well as causing extinction of some species directly, it indirectly causes others through facilitating direct exploitation of organisms, establishment of invasive alien species, introducing sources of pollution, and the ramifying consequences of all of these effects on the linkages among species in the ecosystem. Given the importance of land-use change for biodiversity loss, it is unsurprising that widespread habitat conservation and restoration are central planks of any ambitious global conservation strategy. This analysis therefore focuses on the consequences for terrestrial biodiversity of habitat loss and restoration, recognising that there are other direct drivers of negative and positive changes in biodiversity, especially in marine systems.
+
+The most widely-used approach for comparing numbers of species extinctions across alternative future scenarios is to use the species-area relationship (SAR), one of the most widely-applicable general patterns in biodiversity science. The SAR, which is based on a huge literature spanning over 150 years, states that the number of species (S) that can be supported indefinitely by an area of intact habitat (A) is given by the power-law relationship: $S = c A^z$, where $c$ is a constant and $z$ is typically around 0.25 for isolated patches of habitat. This equation has often been used to estimate how many species become committed to extinction when $A$ is reduced through habitat loss. However, the extinctions are seldom expected to be instantaneous; rather, a patch that has been reduced in size will initially have more species than it can support indefinitely, and species will be lost through extinction as the number in the patch approaches the new equilibrium that the reduced patch can support, with this process -- known as 'relaxation' -- being an exponential decay.
+
+Estimating how many species will have died out by a particular time requires knowledge of the 'half-life' (T_50) or, equivalently, the decay constant, $k$. A short half-life or rapid decay constant means that the new equilibrium will be approached rapidly; a long half-life or slow decay constant means it will take a long time. In this analysis, we use the values of $k$ estimated by Wearn et al. (2012 Science) from a range of studies of different animal and plant taxa. We also use their estimates of $z$.
+
+The general approach we use is to split the world into large grid cells (2$^\circ$ by 2$^\circ$) on the grounds that this grid-cell size (around 40,000 km$^2$ in the tropics) is larger than the entire geographic distributions of many of the world's species. The histogram of species' geographic range sizes is highly skewed, with a relatively small number of very widespread species and very many species -- including most of the several million that have not yet been formally described by taxonomists -- have much smaller distributions; these latter species are often termed endemic species. Because endemic terrestrial species are heavily concentrated within a relatively small fraction of the earth's land surface, the rate of species extinction is heavily dependent on what happens in these regions.
+
+Although the peak hotspots of endemic species differ among taxonomic groups (Grenyer et al. 2006, Nature), there is reasonable congruence among taxa in that endemism tends to be high in areas that are tropical, topographically complex and photosynthetically productive. Range-size distributions are best known for terrestrial vertebrates, which comprise only a small fraction of total diversity. Evidence suggests that range sizes tend to be smaller among plants and invertebrates, with many species having ranges much smaller than 40,000km$2$. For example, Morueta-Holme et al. (2013 Ecology Letters) found 25% of New World plants (21,978 of 84,899) were recorded from only a single 10,000 km$^2$ grid cell. Data for insects -- which make up the bulk of species diversity -- are sparser, but Beck et al. (2018, Biodiversity & Conservation) reported that, in the hotspots of East African hawkmoth diversity, the median range size for hawkmoths was ~ 10,000km$2$ (meaning that fully half the species had ranges smaller than this); and hawk moths are more mobile than many other invertebrates so are expected to have larger ranges on average. Different taxonomic groups have centres of endemism in somewhat different places, but places identified as hotspots of endemic plants and vertebrates are likely to also be rich in endemic insects (Fonseca 2009 Conservation Biology), not least because 40-70% of insect species might be linked to individual plant species (Stork & Habel 2014 Journal of Biogeography). Land-use change affects narrow-range endemics more negatively than more wide-ranging taxa (Newbold et al. 2018, PLoS Biology; Staude et al. 2020 Global Ecology & Biogeography).
+
+This analysis focuses on species endemic to each 2$^\circ$ grid cell, and estimates the fraction of species remaining through the history of land-use change since 1900 and the future of land-use change to 2050 under a range of scenarios. To reflect the uneven distribution of endemic species richness across the world, we assign each grid cell an present-day species richness proportional to its range rarity value based on a global analysis of IUCN range maps for mammals, birds and amphibians (IUCN 2020, website). This number is likely to exceed the equilibrium species diversity in many grid cells because of the extinction debt incurred through recent habitat loss. For each grid cell, the analysis therefore uses the history of land-use change since 1900, taken from the LUH2 data set (Hurtt et al., in prep.), to estimate present-day equilibrial species richness for the endemics within each grid cell; this will generally be lower (and cannot be higher) than the observed species-richness. To reflect the fact that the biodiversity benefit from restoration is not all achieved immediately, the biodiversity value of restored land (relative to natural land) is assumed to increase over time in the way inferred for the Biodiversity Intactness Index (BII: Scholes & Biggs 2005, Nature; Newbold et al. 2019 Nature Ecology & Evolution). BII estimates the number of individuals of native species in an area, relative to the number expected in intact habitat (Scholes & Biggs 2005, Nature), which is expected to be proportional to the number of native species if community assembly has been neutral (Hubbell 2001 book; this assumption is also implict in using the SAR to estimate numbers of extinctions). Thus, the equilibrium number of endemic species the grid cell can support can increase, as more land is restored and as that restored land matures and gains in biodiversity value. Increasing the equilibrium number of species reduces the extinction rate (which is proportional to the difference between current and equilibrium diversities) and so reduce the number of species going extinct by 2030 or 2050.
+
+The analysis assumes that secondary vegetation can support endemic species but may only support fewer of them than can primary vegetationn. The bii_sec parameter can be edited to vary the value of secondary vegetation relative to primary vegetation. The PREDICTS model used in another part of this project has six land-use classes that correspond with secondary vegetation (secondary tropical forest, tropical forest 'other', secondary temperate forest, temperate forest 'other', secondary non-forest and secondary 'other'). BII was estimated for each of these land-use classes from a bespoke model that did not include human population density, and capped at 1. The mean of the six estimates was 0.90; the lowest 0.73 and the highest 1. The mean is used for the central estimate of extinction debt with the end-ranges used in sensitivity analyses.
+
+Because the analysis focuses on species endemic to each grid cell, numbers of species going extinct or saved from extinction can simply be summed across grid cells to get global totals. Because neither the global number of extant animal and plant species nor the fraction endemic to single grid cells is known, it is more reasonable to places these estimates on a percentage scale with two fixed points: a baseline scenario of land-use change without large-scale restoration (SSP2) at 0% and the early-intervention scenario (100%).  
+
+The analysis builds on functions from Wearn et al. (2012, Science), provided by Dr Isabel Rosa.
+
+## Load the required libraries and functions
+```{r, load, echo=FALSE}
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+source("00_functions.R")
+```
+
+## Specify relaxation parameters and other analysis-wide assumptions
+The approach taken here follows that of Wearn et al. (2012, Science), using the coefficients from their syntheses, namely:
+k (the rate of species relaxation towards the new equilirium) = 0.0122 (95% CI = 0.0076-0.0194, suggesting SD ~ 0.003010204)
+z (the exponent of the species-area relationship) = 0.269 (95% CI = 0.224-0.315, suggesting SD ~ 0.02321429)
+```{r, set-assumptions, echo=FALSE}
+bounding.box <- list(x=c(15:24), y=c(30:39)) # A region we restrict most of the time-consuming parts of the analysis to
+
+mean.k <- 0.0122 #Note that this is a continuous rate not an annual rate
+sd.k <- (0.0194-0.0076)/3.92
+mean.z <- 0.269
+sd.z <- (0.315-0.224)/3.92
+
+year_0 <- 850 #The year to which the earliest land-use data relate
+iucn_year <- 2015 # The IUCN range rarity layer is assumed to relate to iucn_year
+historical_span <- c(year_0,2015) #Time period covered by historical land-use rasters
+historical_step <- 5 # Time step used in the historical land-use rasters
+
+#v_years = years with Vivid data
+#v_res_years = years with Vivid data on restoration
+v_years <- c(1985, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2070, 2080, 2090, 2100)
+v_res_years <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060)
+each_year <- c(year_0:max(v_years))
+
+cell_area_raster <- raster("data/cell-area.tif") #total area of each cell
+cell_land_area <- raster("data/land-2.tif") # land area of each cell
+luh2_years <- seq(historical_span[1], historical_span[2], by=historical_step)
+
+```
+##Specify value of restored habitat for endemic species
+We do not assume that restored habitat is as useful for endemic species as is pristine habitat; the value of bii_sec gives its value (relative to 1 for pristine habitat). The bii_sec parameter is estimated from PREDICTS models (see https://nhm.app.box.com/file/672704955887) as the average of BII for secondary vegetation in tropical forest (0.9335480), temperate forest (1.2673158; capped at 1 for logical reasons here) and non-forest (0.7577225) settings. The BII models from which these 
+estimates come also include (log-transformed) human population density; the coefficients used here are those that apply when human population density = 0. This choice was made because, in IUCN's view, 
+restoration requires that human pressures must be removed or fully compensated for. The choice is not intended to mean that people will be excluded from restored land, just that their presence will -- after mitigation -- have no negative impact on the endemic species living there.
+
+There are three estimates of how BII increases with age of restored habitat: one based on analysis of PREDICTS sites of known ages; one based on analysis of secondary vegetation in different successional stages; and one using IUCN's meta-analysis of restoration success. In all cases, it is assumed that land is entirely unsuitable for the endemic species prior to restoration; this assumption requires a rescaling of the BII estimates from PREDICTS models (as BII does not only include endemic species), such that BII rises from zero at time 0 to at most bii_sec at 30 years. The PREDICTS models have age-baseed coefficients within tropical and temperate separately, so these are averaged prior to rescaling (appropriate because the prioritisation layer has been rescaled within regions, so restoration is not tropicocentric). It is also assumed that the upper bound for restored land is given by bii_sec. The central projections will use the mid-range of these three time series, with the fastest and slowest recovery used in sensitivity analyses.
+```{r, specify-BII-in-restored-land, echo=FALSE}
+# What is the value of fully-restored land for endemic species?
+bii_sec <- mean(c(0.9335480, 1, 0.7577225)) # mean = 0.8970902
+
+# In each case, the first value is for age=2.5; then 7.5, 12.5 etc
+
+# 1. Based on sites of known age; values from https://nhm.app.box.com/file/664775504660
+bii_age_trop <- c(0.8069096, 0.8286110, 0.8489985, 0.8678767, 0.8852041, 0.9010971)
+bii_age_temp <- c(0.8816828, 0.9113052, 0.9411066, 0.9708104, 0.9995035, 1.0255823)
+bii_age_ave <- (bii_age_trop + bii_age_temp)/2
+
+
+bii_agriculture <- mean(0.2943632, 0.2164017, 0.5041286, 0.7204787, 
+                        0.1994868, 0.2232611, 0.4633725, 0.2756085) #8 agricultural classes
+# Note that this is a change from an earlier version (which also used the BII values for
+# agricultural classes in nonforest). The change was made because "restoration" has no benefit
+# in non-forest biomes. Note also that the agriculture classes have the same BII in the 
+# stage-based model below as they do here.
+
+bii_age_ave <- c(bii_agriculture, bii_age_ave)
+bii_ages <- rescale(bii_age_ave, to=c(0, min(bii_sec, max(bii_age_ave))))
+bii_ages <- c(bii_ages[-1], bii_sec)
+
+
+# 2. Based on sites in different stages of recovery; values from https://nhm.app.box.com/file/672704955887
+bii_stage_trop <- c(0.8269416, 0.9542634, 0.9214284, 0.8790755, 0.9230417, 1.0647969)
+bii_stage_temp <- c(0.4582941, 0.6291409, 0.7396435, 0.7836804, 0.8269967, 0.8712135)
+bii_stage_ave <- (bii_stage_temp + bii_stage_trop)/2
+bii_stage_ave <- c(bii_agriculture, bii_stage_ave)
+bii_stages <- rescale(bii_stage_ave, to=c(0, min(bii_sec, max(bii_stage_ave))))
+bii_stages <- c(bii_stages[-1], bii_sec)
+
+# 3. Based on IUCN's estimate of 3% chance of successful restoration per year
+bii_IUCN <- c(0.075, 0.225, 0.375, 0.525, 0.675, 0.825, bii_sec)
+
+# Plot to compare: the median trajectory is that from the stage-based PREDICTS model; but note that both
+# PREDICTS models assign markedly higher biodiversity value to 15-year-old restored land than does the 
+# "3% recovery per year" estimate
+plot(bii_IUCN ~ seq(2.5, 32.5, 5), type="l", col="purple", lwd=2, ylab="Biodiversity Intactness Index",
+     xlab="Age of restored habitat", cex.lab=1.3, main="BII vs time since restoration (dashed line = mid-range)",
+     sub="Green: from site age; Brown: from site stage; Purple: from IUCN meta-analysis")
+points(bii_ages ~ seq(2.5, 32.5, 5), type="l", col="green", lwd=2)
+points(bii_stages ~ seq(2.5, 32.5, 5), type="l", col="brown", lwd=2)
+
+# 4. Given the skew among the three trajectories, a fourth time series is the mid-range
+bii_midrange <- (bii_ages + bii_IUCN)/2
+points(bii_midrange ~ seq(2.5, 32.5, 5), type="l", col="black", lwd=2, lty=2)
+text(32, 0.15, "3% per year (IUCN)", col="purple", pos=2)
+text(32, 0.2, "Midrange", col="black", pos=2)
+text(32, 0.25, "Stage-based", col="brown", pos=2)
+text(32, 0.3, "Age-based", col="green", pos=2)
+
+png("output/Recovery curves.png", height=600, width=800)
+plot(c(0,bii_IUCN) ~ c(0,seq(2.5, 32.5, 5)), type="l", col="purple", lwd=2, ylab="Biodiversity Intactness Index",
+     xlab="Age of restored habitat", cex.lab=1.3)
+points(c(0, bii_ages) ~ c(0, seq(2.5, 32.5, 5)), type="l", col="green", lwd=2)
+points(c(0, bii_stages) ~ c(0, seq(2.5, 32.5, 5)), type="l", col="brown", lwd=2)
+bii_midrange <- (bii_ages + bii_IUCN)/2
+points(c(0, bii_midrange) ~ c(0, seq(2.5, 32.5, 5)), type="l", col="black", lwd=2, lty=2)
+text(33, 0.0, "3% per year (IUCN)", col="purple", pos=2, cex=1.3)
+text(33, 0.04, "Midrange", col="black", pos=2, cex=1.3)
+text(33, 0.08, "Stage-based", col="brown", pos=2, cex=1.3)
+text(33, 0.12, "Age-based", col="green", pos=2, cex=1.3)
+dev.off()
+
+# 5. Choose z, k and set of BII values to use for restored land in the analyses
+this.z <- mean.z
+this.k <- mean.k
+bii_res <- bii_midrange
+
+```
+
+## Read range size rarity raster in from IUCN and sum within 2$^\circ$ grid cells
+Range-size rarity is on a grid with cells that are 5km square at the equator, so are not strictly nested within the 2$^\circ$ grid cells of the land-use data. The data are therefore resampled (actually done on log-transformed data because range-size rarity is extremely skewed) into a $\frac{1}{22}$$^\circ$ grid. Then aggregate is used to sum the 44 x 44 antilogged values within each 2$^\circ$ grid cell. This range-size rarity layer is taken as a proxy for the relative numbers of endemic species within each grid cell in the present day.
+```{r, range-size-rarity, echo=FALSE, cache=TRUE}
+log_rsr <- log(raster("data/RSR_all.tif"))
+nested_raster <- disaggregate(cell_area_raster, fact=44)
+nested_rsr <- exp(resample(log_rsr, nested_raster))
+rsr <- aggregate(nested_rsr, fact=44)
+plot(rsr, main="Range-size rarity summed within 2-degree grid cells")
+rsr_rescaled <- rsr/cellStats(rsr, mean) #Converts to a mean of 1
+rsr_array <- as.array(rsr_rescaled) #Convert to array as S_t is an array
+```
+## Sense-checks on Vivid MAgPIE data
+
+```{r, sense_check_MAgPIE_data, echo=FALSE, cache=TRUE}
+# If we have a historical annual area file to use, then we use it; otherwise we create it
+if (file.exists("output/historic_annual_area.Rds")){
+  historic_annual_area <- readRDS("output/historic_annual_area.Rds")
+}else{
+  source("01_produce_historical_area.R")
+}
+
+cat("Comparing the primary and secondary vegetation in 2015 among scenarios\n")
+compare.scenarios(year=2015,
+                  base="data/vivid-base-primary.tif",
+                  early="data/vivid-early-primary.tif",
+                  late="data/vivid-late_29-primary.tif")
+
+compare.scenarios(year=2015,
+                  base="data/vivid-base-secondary.tif",
+                  early="data/vivid-early-secondary.tif",
+                  late="data/vivid-late_29-secondary.tif")
+
+cat("Comparing the primary and secondary vegetation in 2020 among scenarios\n")
+compare.scenarios(year=2020,
+                  base="data/vivid-base-primary.tif",
+                  early="data/vivid-early-primary.tif",
+                  late="data/vivid-late_29-primary.tif")
+
+compare.scenarios(year=2020,
+                  base="data/vivid-base-secondary.tif",
+                  early="data/vivid-early-secondary.tif",
+                  late="data/vivid-late_29-secondary.tif")
+
+cat("Comparing the primary and secondary vegetation in 2050 among scenarios\n")
+compare.scenarios(year=2050,
+                  base="data/vivid-base-primary.tif",
+                  early="data/vivid-early-primary.tif",
+                  late="data/vivid-late_29-primary.tif")
+
+compare.scenarios(year=2050,
+                  base="data/vivid-base-secondary.tif",
+                  early="data/vivid-early-secondary.tif",
+                  late="data/vivid-late_29-secondary.tif")
+
+# Compare areas of primary, secondary, mf and sf among the scenarios
+pribase <- cellStats(stack("data/vivid-base-primary.tif") * cell_area_raster, "sum")
+secbase <- cellStats(stack("data/vivid-base-secondary.tif") * cell_area_raster, "sum")
+mfbase <- cellStats(stack("data/restored-base-mf.tif") * cell_area_raster, "sum")
+sfbase <- cellStats(stack("data/restored-base-sf.tif") * cell_area_raster, "sum")
+priearly <- cellStats(stack("data/vivid-early-primary.tif") * cell_area_raster, "sum")
+secearly <- cellStats(stack("data/vivid-early-secondary.tif") * cell_area_raster, "sum")
+mfearly <- cellStats(stack("data/restored-early-mf.tif") * cell_area_raster, "sum")
+sfearly <- cellStats(stack("data/restored-early-sf.tif") * cell_area_raster, "sum")
+priearly125 <- cellStats(stack("data/vivid-early_125-primary.tif") * cell_area_raster, "sum")
+secearly125 <- cellStats(stack("data/vivid-early_125-secondary.tif") * cell_area_raster, "sum")
+mfearly125 <- cellStats(stack("data/restored-early_125-mf.tif") * cell_area_raster, "sum")
+sfearly125 <- cellStats(stack("data/restored-early_125-sf.tif") * cell_area_raster, "sum")
+pri29 <- cellStats(stack("data/vivid-late_29-primary.tif") * cell_area_raster, "sum")
+sec29 <- cellStats(stack("data/vivid-late_29-secondary.tif") * cell_area_raster, "sum")
+mf29 <- cellStats(stack("data/restored-late_29-mf.tif") * cell_area_raster, "sum")
+sf29 <- cellStats(stack("data/restored-late_29-sf.tif") * cell_area_raster, "sum")
+
+area_p <- data.frame(base = pribase, early = priearly, early125 = priearly125, late29 = pri29)
+area_s <- data.frame(base = secbase, early = secearly, early125 = secearly125, late29 = sec29)
+cat("Compare area of primary among scenarios\n")
+plot.vivid.pri.sec(area_p)
+cat("Compare area of secondary among scenarios\n")
+plot.vivid.pri.sec(area_s)
+
+area_mf <- data.frame(base = mfbase, early = mfearly, early125 = mfearly125, late29 = mf29)
+area_sf <- data.frame(base = sfbase, early = sfearly, early125 = sfearly125, late29 = sf29)
+cat("Compare MAgPIE 'managed forest' among scenarios, within each 5-year period and cumulatively\n")
+plot.vivid.mf.sf(area_mf)
+cat("Compare MAgPIE 'secondary forest' among scenarios, within each 5-year period and cumulatively\n")
+plot.vivid.mf.sf(area_sf)
+
+
+# Explore mf and sf for each scenario
+layer <- which(v_years==2050)
+cat("Further plots of MAgPIE managed forest and secondary forest: Baseline scenario\n")
+plot4(pri="data/vivid-base-primary.tif", sec="data/vivid-base-secondary.tif",
+      mf="data/restored-base-mf.tif", sf="data/restored-base-sf.tif", layer=layer)
+pdf("output/Baseline 4-plot for 2050.pdf", height=8, width=10)
+plot4(pri="data/vivid-base-primary.tif", sec="data/vivid-base-secondary.tif",
+      mf="data/restored-base-mf.tif", sf="data/restored-base-sf.tif", layer=layer)
+dev.off()
+
+cat("Further plots of MAgPIE managed forest and secondary forest: Immediate action\n")
+plot4(pri="data/vivid-early-primary.tif", sec="data/vivid-early-secondary.tif",
+      mf="data/restored-early-mf.tif", sf="data/restored-early-sf.tif", layer=layer)
+pdf("output/Early 4-plot for 2050.pdf", height=8, width=10)
+plot4(pri="data/vivid-early-primary.tif", sec="data/vivid-early-secondary.tif",
+      mf="data/restored-early-mf.tif", sf="data/restored-early-sf.tif", layer=layer)
+dev.off()
+
+cat("Further plots of MAgPIE managed forest and secondary forest: High-ambition immediate action\n")
+plot4(pri="data/vivid-early_125-primary.tif", sec="data/vivid-early_125-secondary.tif",
+      mf="data/restored-early_125-mf.tif", sf="data/restored-early_125-sf.tif", layer=layer)
+pdf("output/Early 4-plot for 2050.pdf", height=8, width=10)
+plot4(pri="data/vivid-early_125-primary.tif", sec="data/vivid-early_125-secondary.tif",
+      mf="data/restored-early_125-mf.tif", sf="data/restored-early_125-sf.tif", layer=layer)
+dev.off()
+
+cat("Further plots of MAgPIE managed forest and secondary forest: Delayed action\n")
+plot4(pri="data/vivid-late_29-primary.tif", sec="data/vivid-late_29-secondary.tif",
+      mf="data/restored-late_29-mf.tif", sf="data/restored-late_29-sf.tif", layer=layer)
+pdf("output/Late_29 4-plot for 2050.pdf", height=8, width=10)
+plot4(pri="data/vivid-late_29-primary.tif", sec="data/vivid-late_29-secondary.tif",
+      mf="data/restored-late_29-mf.tif", sf="data/restored-late_29-sf.tif", layer=layer)
+dev.off()
+
+## Plots to check that add_res_fraction isn't introducing anything unexpected
+cat("A range of other plots to investigate expected behaviour within scenarios and differences between them\n")
+## 1. Baseline scenario
+cat("1. Baseline scenario\n")
+base_natural_raster <- clamp(stack("data/vivid-base-primary.tif") + bii_sec * stack("data/vivid-base-secondary.tif"),
+                                          lower=0, upper=1, useValues=TRUE)
+base_restored_raster <- clamp(add_res_fraction(natural=base_natural_raster, restored = stack("data/restored-base-mf.tif") +
+                                           stack("data/restored-base-sf.tif"), biis = bii_res), lower=0, upper=1, useValues=TRUE)
+plot(subset(base_natural_raster, layer), main=paste("Baseline: Pri + bii_sec * Sec, ", v_years[layer]))
+cat("The baseline scenario's effective habitat area in 2050 (below) is very similar to the map above, as expected given baseline scenario has negligible restoration.\n")
+plot(subset(base_restored_raster, layer), main=paste("Baseline: Effective habitat fraction,", v_years[layer]))
+cat("But there is some restoration even in the baseline scenario, as the next map shows.\n")
+plot(subset(base_restored_raster, layer)-subset(base_natural_raster, layer),
+     main=paste("Effective fraction restored,", v_years[layer])) 
+
+# 2. Early scenario
+cat("2. Immediate action scenario\n")
+early_natural_raster <- clamp(stack("data/vivid-early-primary.tif") + bii_sec * stack("data/vivid-early-secondary.tif"),
+                                          lower=0, upper=1, useValues=TRUE)
+early_restored_raster <- add_res_fraction(natural=early_natural_raster, restored = stack("data/restored-early-mf.tif") +
+                                           stack("data/restored-early-sf.tif"), biis = bii_res)
+cat("Under the Early scenario, more primary and secondary vegetation remains at 2050 than in the baseline scenario.\n")
+plot(subset(early_restored_raster, layer), main=paste("Early: Pri + bii_sec * Sec, ", v_years[layer]))
+cat("The next plot shows the differences in Pri + bii_sec * Sec, with white indicating no difference.\n")
+bluered.plot(subset(early_natural_raster, layer), subset(base_natural_raster, layer),
+             main=paste("Pri + bii_sec * Sec in", v_years[layer],": Early - Baseline"))
+cat("The Early scenario has restoration mostly in South America and Southeast Asia.\n")
+plot(subset(early_restored_raster, layer)-subset(early_natural_raster, layer), 
+     main=paste("Early: effectively restored fraction,", v_years[layer])) # Early has restoration in S America & SE Asia
+cat("As a consequence of better preservation and large-scale restoration, the Early scenario has a\n larger effective habitat fraction than the baseline scenario across many regions.\n")
+bluered.plot(raster1 = subset(early_restored_raster, layer), raster2 = subset(base_restored_raster, layer),
+             main=paste("Effective habitat fraction in", v_years[layer], ": Early - Baseline"))
+
+# 3. Early-125 scenario
+cat("2. Immediate high-ambition scenario\n")
+early125_natural_raster <- clamp(stack("data/vivid-early_125-primary.tif") + bii_sec * stack("data/vivid-early_125-secondary.tif"),
+                                          lower=0, upper=1, useValues=TRUE)
+early125_restored_raster <- add_res_fraction(natural=early125_natural_raster, restored = stack("data/restored-early_125-mf.tif") +
+                                           stack("data/restored-early_125-sf.tif"), biis = bii_res)
+cat("Under the High-ambition immmediate scenario, more primary and secondary vegetation remains at 2050 than in the baseline scenario.\n")
+plot(subset(early125_restored_raster, layer), main=paste("Early: Pri + bii_sec * Sec, ", v_years[layer]))
+cat("The next plot shows the differences in Pri + bii_sec * Sec, with white indicating no difference.\n")
+bluered.plot(subset(early125_natural_raster, layer), subset(base_natural_raster, layer),
+             main=paste("Pri + bii_sec * Sec in", v_years[layer],": Early - Baseline"))
+plot(subset(early125_restored_raster, layer)-subset(early125_natural_raster, layer), 
+     main=paste("Early-125: effectively restored fraction,", v_years[layer])) # Early has restoration in S America & SE Asia
+cat("As a consequence of better preservation and large-scale restoration, the Early scenario has a\n larger effective habitat fraction than the baseline scenario across many regions.\n")
+bluered.plot(raster1 = subset(early125_restored_raster, layer), raster2 = subset(base_restored_raster, layer),
+             main=paste("Effective habitat fraction in", v_years[layer], ": Early - Baseline"))
+
+# 4. Late-29 scenario
+cat("3. Delayed-action scenario\n")
+late_29_natural_raster <- clamp(stack("data/vivid-late_29-primary.tif") + bii_sec * stack("data/vivid-late_29-secondary.tif"),
+                                          lower=0, upper=1, useValues=TRUE)
+late_29_restored_raster <- add_res_fraction(natural=late_29_natural_raster, restored = stack("data/restored-late_29-mf.tif") +
+                                           stack("data/restored-late_29-sf.tif"), biis = bii_res)
+plot(subset(late_29_natural_raster, layer), main=paste("Late-29: Pri + bii_sec * Sec, ", v_years[layer]))
+plot(subset(late_29_restored_raster, layer), main=paste("Effective habitat fraction in", v_years[layer], ": Late-29"))
+cat("Late-29 shows areas of sharp reduction and sharp increase in effective habitat fraction from 2020 to 2050.\n")
+bluered.plot(raster1 = subset(late_29_restored_raster, layer), raster2 = subset(late_29_restored_raster, 7), 
+             main=paste("Late_29: Change in effective habitat fraction from", v_years[7], "to", v_years[layer])) #Loss in Africa and S Am
+plot(subset(late_29_natural_raster, 7) - subset(base_natural_raster, 7), 
+     main=paste("Pri + bii_sec * Sec in", v_years[7], ": Late-29 - Baseline")) 
+cat("Late-29's restoration is much more in Western Europe and much less in mainland Asia,\n compared with the Early scenario\n")
+plot(subset(late_29_restored_raster, layer)-subset(late_29_natural_raster, layer), 
+     main=paste("Late-29: Fraction set aside for restoration by", v_years[layer]))
+cat("Late-29 and Baseline scenarios start with the same amount of natural habitat in 1985.\n")
+bluered.plot(raster1 = subset(late_29_natural_raster, 1), raster2 = subset(base_natural_raster, 1), 
+    main=paste("Late 29 - Baseline: Pri + bii_sec * Sec in", v_years[1]))
+
+cat("Maps showing Pri + bii_sec * Sec in 2050 for baseline, early, early-125 and late-29 scenarios./n")
+par(mfrow=c(2,2))
+plot(subset(base_natural_raster, layer), main=paste("Baseline: Pri + bii_sec * Sec, ", v_years[layer]))
+plot(subset(early_natural_raster, layer), main=paste("Early: Pri + bii_sec * Sec, ", v_years[layer]))
+plot(subset(early125_natural_raster, layer), main=paste("Early: Pri + bii_sec * Sec, ", v_years[layer]))
+plot(subset(late_29_natural_raster, layer), main=paste("Late-29: Pri + bii_sec * Sec, ", v_years[layer]))
+par(mfrow=c(1,1))
+
+```
+
+## Using Vivid MAgPIE output as input for projections
+The Vivid MAgPIE data come in four tifs per scenario: primary, secondary, restored managed forest and restored secondary forest. Primary and secondary tifs have data for the (not-quite-regularly spaced) years 1985, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2070, 2080, 2090 and 2100; and the restored land tif contains 9 bands, corresponding to the years in the five-year periods ending 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055 and 2060. The primary and secondary data do not agree with the LUH2 data for the years of overlap, though they are very strongly correlated. The agreement is strongest in 1985 ($r^2$ of cell-level natural fraction between LUH2 and MAgPIE = 0.976), so this code rescales the historical LUH2 data for each grid cell so that it melds seamlessly with the Vivid data at 1985, at the cost of some distortion of the land-use history in the LUH2 data.
+
+## Baseline scenario
+The baseline scenario is used as a basis for comparison for the extinctions projected under intervention scenarios.
+
+```{r, run_baseline_scenario, echo=FALSE, warning=FALSE, cache=TRUE}
+
+# If we have a historical annual area file to use, then we use it; otherwise we create it
+if (file.exists("output/historic_annual_area.Rds")){
+  historic_annual_area <- readRDS("output/historic_annual_area.Rds")
+}else{
+  source("01_produce_historical_area.R")
+}
+
+# Get effective area of primary vegetation for each year from 850 to 2100
+base_area <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-base-primary.tif",
+                                sec="data/vivid-base-secondary.tif",
+                                mf="data/restored-base-mf.tif",
+                                sf="data/restored-base-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_res,
+                                cell_area_raster = cell_area_raster,
+                                overlap.plots=TRUE)
+saveRDS(base_area, file="output/base_area.Rds")
+
+# Crop to smaller region for speed
+#base_area_c <- crop(base_area, box=bounding.box)
+#rsr_array_c <- crop(rsr_array, box=bounding.box)
+
+# Do relaxation; for baseline scenario do the history as well as the future
+S_t_base <- relax(natarea=base_area, years=each_year, wanted=each_year, rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_base <- apply(S_t_base, MARGIN=3, sum, na.rm=TRUE)
+baa <- apply(base_area, MARGIN=3, sum, na.rm=TRUE)
+cbind(each_year[1131:1251], baa[1131:1251])
+# Plot, map and totals
+percentage_plot(A=base_area, S=S_t_base, year=each_year, main_stem="Baseline")
+extinctions_map(S=S_t_base, year=each_year, main_stem="Baseline")
+baseline_totals <- get_totals(S = endemics_base, year = each_year)
+cat("Baseline: extinction summary\n")
+print(baseline_totals)
+
+# Print out attributes of area and species time-series, so provenance is clear
+print(attributes(base_area))
+print(attributes(S_t_base))
+
+```
+
+## Main intervention scenarios
+There are three intervention scenarios: immediate action, high-ambition immediate action, and delayed action.
+```{r, main-scenarios, echo=FALSE, message=FALSE, cache=TRUE}
+y_2015 <- which(each_year==2015)
+y_2100 <- which(each_year==2100)
+
+# EARLY SCENARIO
+early_area <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early-primary.tif",
+                                sec="data/vivid-early-secondary.tif",
+                                mf="data/restored-early-mf.tif",
+                                sf="data/restored-early-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_res,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early_area, file="output/early_area")
+
+# Do relaxation; only for 2015-2100
+S_t_early <- relax(natarea=early_area, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early <- apply(S_t_early, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early_totals <- get_totals(S = endemics_early, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early action: extinction summary\n")
+print(early_totals)
+percentage_plot(A=early_area[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early")
+extinctions_map(S=S_t_early, year=c(2015:2100), main_stem="Early")
+
+
+# EARLY-125 SCENARIO
+early_125_area <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early_125-primary.tif",
+                                sec="data/vivid-early_125-secondary.tif",
+                                mf="data/restored-early_125-mf.tif",
+                                sf="data/restored-early_125-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_res,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early_125_area, file="output/early_125_area")
+
+#early_125_area_c <- crop(early_125_area, box=bounding.box)
+S_t_early_125 <- relax(natarea=early_125_area, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early_125 <- apply(S_t_early_125, MARGIN=3, sum, na.rm=TRUE)
+
+early_125_totals <- get_totals(S = endemics_early_125, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("early-125 action: extinction summary\n")
+print(early_125_totals)
+percentage_plot(A=early_125_area[,,y_2015:y_2100], A0=sum(early_125_area[,,1], na.rm=TRUE),
+                        S=S_t_early_125, S0=early_125_totals$original_richness, 
+                        year=c(2015:2100), main_stem="early-125")
+extinctions_map(S=S_t_early_125, year=c(2015:2100), main_stem="early-125")
+
+
+# LATE-29 SCENARIO
+late_29_area <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-late_29-primary.tif",
+                                sec="data/vivid-late_29-secondary.tif",
+                                mf="data/restored-late_29-mf.tif",
+                                sf="data/restored-late_29-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_res,
+                                cell_area_raster = cell_area_raster)
+saveRDS(late_29_area, file="output/late_29_area")
+
+S_t_late_29 <- relax(natarea=late_29_area, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_late_29 <- apply(S_t_late_29, MARGIN=3, sum, na.rm=TRUE)
+
+late_29_totals <- get_totals(S = endemics_late_29, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Late-29 action: extinction summary\n")
+print(late_29_totals)
+percentage_plot(A=late_29_area[,,y_2015:y_2100], A0=sum(late_29_area[,,1], na.rm=TRUE),
+                        S=S_t_late_29, S0=late_29_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Late-29")
+extinctions_map(S=S_t_late_29, year=c(2015:2100), main_stem="Late-29")
+```
+## Sensitivity analysis
+The analyses above provide the central estimates, but there are three dimensions of sensitivity analysis that are possible (in addition to the different variants of early and late scenarios): different recovery curves for BII with age of restored habitat (bii_res), different exponents for the species-area relationship (z) and different rate parameters for relaxation (k). Of these, bii_res is likely to have the strongest influence over the relative performance of early and late scenarios. We therefore repeat the analysis using each of the three BII recovery curves in turn, for baseline, early and late-29 scenarios.
+
+```{r, sensitivity, echo=FALSE, message=FALSE, cache=TRUE}
+# BII based on sites of known ages
+base_area_bii_ages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-base-primary.tif",
+                                sec="data/vivid-base-secondary.tif",
+                                mf="data/restored-base-mf.tif",
+                                sf="data/restored-base-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_ages,
+                                cell_area_raster = cell_area_raster,
+                                overlap.plots=TRUE)
+saveRDS(base_area_bii_ages, file="output/base_area_bii_ages.Rds")
+
+# Do relaxation; for baseline scenario do the history as well as the future
+S_t_base_ages <- relax(natarea=base_area_bii_ages, years=each_year, wanted=each_year, rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_base_ages <- apply(S_t_base_ages, MARGIN=3, sum, na.rm=TRUE)
+baa <- apply(base_area_bii_ages, MARGIN=3, sum, na.rm=TRUE)
+cbind(each_year[1131:1251], baa[1131:1251])
+# Plot, map and totals
+percentage_plot(A=base_area_bii_ages, S=S_t_base_ages, year=each_year, main_stem="Baseline, bii_ages")
+extinctions_map(S=S_t_base_ages, year=each_year, main_stem="Baseline, bii_ages")
+baseline_totals_ages <- get_totals(S = endemics_base_ages, year = each_year)
+cat("Baseline, bii_ages: extinction summary\n")
+print(baseline_totals_ages)
+
+# Print out attributes of area and species time-series, so provenance is clear
+print(attributes(base_area_bii_ages))
+print(attributes(S_t_base_ages))
+
+
+# EARLY SCENARIO
+early_area_ages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early-primary.tif",
+                                sec="data/vivid-early-secondary.tif",
+                                mf="data/restored-early-mf.tif",
+                                sf="data/restored-early-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_ages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early_area_ages, file="output/early_area_ages")
+
+# Do relaxation; only for 2015-2100
+S_t_early_ages <- relax(natarea=early_area_ages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early_ages <- apply(S_t_early_ages, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early_totals_ages <- get_totals(S = endemics_early_ages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early action: extinction summary\n")
+print(early_totals_ages)
+percentage_plot(A=early_area_ages[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early_ages, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early, bii_ages")
+extinctions_map(S=S_t_early_ages, year=c(2015:2100), main_stem="Early, bii_ages")
+
+# EARLY-125 SCENARIO
+early125_area_ages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early_125-primary.tif",
+                                sec="data/vivid-early_125-secondary.tif",
+                                mf="data/restored-early_125-mf.tif",
+                                sf="data/restored-early_125-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_ages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early125_area_ages, file="output/early125_area_ages")
+
+# Do relaxation; only for 2015-2100
+S_t_early125_ages <- relax(natarea=early125_area_ages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early125_ages <- apply(S_t_early125_ages, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early125_totals_ages <- get_totals(S = endemics_early125_ages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early-125 action: extinction summary\n")
+print(early125_totals_ages)
+percentage_plot(A=early125_area_ages[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early125_ages, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early-125, bii_ages")
+extinctions_map(S=S_t_early125_ages, year=c(2015:2100), main_stem="Early-125, bii_ages")
+
+
+# LATE-29 SCENARIO
+late_29_area_ages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-late_29-primary.tif",
+                                sec="data/vivid-late_29-secondary.tif",
+                                mf="data/restored-late_29-mf.tif",
+                                sf="data/restored-late_29-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_ages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(late_29_area_ages, file="output/late_29_area_ages")
+
+S_t_late_29_ages <- relax(natarea=late_29_area_ages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_late_29_ages <- apply(S_t_late_29_ages, MARGIN=3, sum, na.rm=TRUE)
+
+late_29_totals_ages <- get_totals(S = endemics_late_29_ages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Late-29 action: extinction summary\n")
+print(late_29_totals_ages)
+percentage_plot(A=late_29_area_ages[,,y_2015:y_2100], A0=sum(late_29_area_ages[,,1], na.rm=TRUE),
+                        S=S_t_late_29_ages, S0=late_29_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Late-29")
+extinctions_map(S=S_t_late_29_ages, year=c(2015:2100), main_stem="Late-29")
+
+## BII based on sites with stage info only
+
+# EARLY SCENARIO
+early_area_stages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early-primary.tif",
+                                sec="data/vivid-early-secondary.tif",
+                                mf="data/restored-early-mf.tif",
+                                sf="data/restored-early-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_stages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early_area_stages, file="output/early_area_stages")
+
+# Do relaxation; only for 2015-2100
+S_t_early_stages <- relax(natarea=early_area_stages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early_stages <- apply(S_t_early_stages, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early_totals_stages <- get_totals(S = endemics_early_stages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early action: extinction summary\n")
+print(early_totals_stages)
+percentage_plot(A=early_area_stages[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early_stages, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early, bii_stages")
+extinctions_map(S=S_t_early, year=c(2015:2100), main_stem="Early, bii_stages")
+
+
+# EARLY-125 SCENARIO
+early125_area_stages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early_125-primary.tif",
+                                sec="data/vivid-early_125-secondary.tif",
+                                mf="data/restored-early_125-mf.tif",
+                                sf="data/restored-early_125-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_stages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early125_area_stages, file="output/early125_area_stages")
+
+# Do relaxation; only for 2015-2100
+S_t_early125_stages <- relax(natarea=early125_area_stages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early125_stages <- apply(S_t_early125_stages, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early125_totals_stages <- get_totals(S = endemics_early125_stages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early-125 action: extinction summary\n")
+print(early125_totals_stages)
+percentage_plot(A=early125_area_stages[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early125_stages, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early-125, bii_ages")
+extinctions_map(S=S_t_early125_stages, year=c(2015:2100), main_stem="Early-125, bii_ages")
+
+
+# LATE-29 SCENARIO
+late_29_area_stages <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-late_29-primary.tif",
+                                sec="data/vivid-late_29-secondary.tif",
+                                mf="data/restored-late_29-mf.tif",
+                                sf="data/restored-late_29-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_stages,
+                                cell_area_raster = cell_area_raster)
+saveRDS(late_29_area_stages, file="output/late_29_area_stages")
+
+S_t_late_29_stages <- relax(natarea=late_29_area_stages, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_late_29_stages <- apply(S_t_late_29_stages, MARGIN=3, sum, na.rm=TRUE)
+
+late_29_totals_stages <- get_totals(S = endemics_late_29_stages, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Late-29 action: extinction summary\n")
+print(late_29_totals_stages)
+percentage_plot(A=late_29_area_stages[,,y_2015:y_2100], A0=sum(late_29_area_stages[,,1], na.rm=TRUE),
+                        S=S_t_late_29_stages, S0=late_29_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Late-29")
+extinctions_map(S=S_t_late_29_stages, year=c(2015:2100), main_stem="Late-29")
+
+
+# Using BII from IUCN
+
+# EARLY SCENARIO
+early_area_IUCN <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early-primary.tif",
+                                sec="data/vivid-early-secondary.tif",
+                                mf="data/restored-early-mf.tif",
+                                sf="data/restored-early-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_IUCN,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early_area_IUCN, file="output/early_area_IUCN")
+
+# Do relaxation; only for 2015-2100
+S_t_early_IUCN <- relax(natarea=early_area_IUCN, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early_IUCN <- apply(S_t_early_IUCN, MARGIN=3, sum, na.rm=TRUE)
+
+# Totals, plot and map
+early_totals_IUCN <- get_totals(S = endemics_early_IUCN, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Early action: extinction summary\n")
+print(early_totals_IUCN)
+percentage_plot(A=early_area_IUCN[,,y_2015:y_2100], A0=sum(base_area[,,1], na.rm=TRUE),
+                        S=S_t_early_IUCN, S0=early_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Early, bii_IUCN")
+extinctions_map(S=S_t_early_IUCN, year=c(2015:2100), main_stem="Early, bii_IUCN")
+
+
+# EARLY-125 SCENARIO
+early125_area_IUCN <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-early_125-primary.tif",
+                                sec="data/vivid-early_125-secondary.tif",
+                                mf="data/restored-early_125-mf.tif",
+                                sf="data/restored-early_125-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_IUCN,
+                                cell_area_raster = cell_area_raster)
+saveRDS(early125_area_IUCN, file="output/early125_IUCN")
+
+# Do relaxation; only for 2015-2100
+S_t_early125_IUCN <- relax(natarea=early125_area_IUCN, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_early125_IUCN <- apply(S_t_early125_IUCN, MARGIN=3, sum, na.rm=TRUE)
+
+early_125_totals_IUCN <- get_totals(S = endemics_early125_IUCN, S0=baseline_totals$original_richness, year = c(2015:2100))
+
+
+# LATE-29 SCENARIO
+late_29_area_IUCN <- annual_scenario_lu(hist=historic_annual_area,
+                                pri="data/vivid-late_29-primary.tif",
+                                sec="data/vivid-late_29-secondary.tif",
+                                mf="data/restored-late_29-mf.tif",
+                                sf="data/restored-late_29-sf.tif",
+                                historical_span = historical_span,
+                                scenario_years = v_years,
+                                restored_years = v_res_years,
+                                bii_sec = bii_sec,
+                                bii_res = bii_IUCN,
+                                cell_area_raster = cell_area_raster)
+saveRDS(late_29_area_IUCN, file="output/late_29_area_IUCN")
+
+S_t_late_29_IUCN <- relax(natarea=late_29_area_IUCN, years=each_year, wanted=c(2015:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+endemics_late_29_IUCN <- apply(S_t_late_29_IUCN, MARGIN=3, sum, na.rm=TRUE)
+
+late_29_totals_IUCN <- get_totals(S = endemics_late_29_IUCN, S0=baseline_totals$original_richness, year = c(2015:2100))
+cat("Late-29 action: extinction summary\n")
+print(late_29_totals_IUCN)
+percentage_plot(A=late_29_area_IUCN[,,y_2015:y_2100], A0=sum(late_29_area_IUCN[,,1], na.rm=TRUE),
+                        S=S_t_late_29_IUCN, S0=late_29_totals$original_richness, 
+                        year=c(2015:2100), main_stem="Late-29")
+extinctions_map(S=S_t_late_29_IUCN, year=c(2015:2100), main_stem="Late-29")
+
+
+```
+
+
+## Plots for inclusion in report and appendix
+```{r, synthesis-plots, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+#Extinctions, main analysis
+col_base <- "#99999a"
+col_early <- "#00bfd6"
+col_early_125 <- "#002c5c"
+col_late <- "#d7006d"
+png("output/Scenario totals using bii_midrange.png", width=480, height=480)
+rs <- 100/(endemics_base[1171] - endemics_base[1202])
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col=col_base,
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early[6] - endemics_early[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_early)
+points(rs*(endemics_early_125[6] - endemics_early_125[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_early_125)
+points(rs*(endemics_late_29[6] - endemics_late_29[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_late)
+text(2020, 93, "Immediate action", col=col_early, pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col=col_early_125, pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col=col_late, pos=4, cex=1.2)
+text(2020, 98, "Baseline", col=col_base, pos=4, cex=1.2)
+dev.off()
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col=col_base,
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early[6] - endemics_early[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_early)
+points(rs*(endemics_early_125[6] - endemics_early_125[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_early_125)
+points(rs*(endemics_late_29[6] - endemics_late_29[6:86]) ~ c(2020:2100), type="l", lwd=3, col=col_late)
+text(2020, 93, "Immediate action", col=col_early, pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col=col_early_125, pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col=col_late, pos=4, cex=1.2)
+text(2020, 98, "Baseline", col=col_base, pos=4, cex=1.2)
+
+# Extinctions compared, using BII based on site ages
+png("output/Scenario totals using bii_ages.png", width=480, height=480)
+rs <- 100/(endemics_base_ages[1171] - endemics_base_ages[1202])
+plot(rs*(endemics_base_ages[1171] - endemics_base_ages[1171:1251])~c(2020:2100), type="l", lwd=3, col="#dbd9d6",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_ages[6] - endemics_early_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_ages[6] - endemics_early125_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_ages[6] - endemics_late_29_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+dev.off()
+plot(rs*(endemics_base_ages[1171] - endemics_base_ages[1171:1251])~c(2020:2100), type="l", lwd=3, col="#111820",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_ages[6] - endemics_early_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_ages[6] - endemics_early125_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_ages[6] - endemics_late_29_ages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+
+# Extinctions compared, using BII based on site stages
+png("output/Scenario totals using bii_stages.png", width=480, height=480)
+rs <- 100/(endemics_base[1171] - endemics_base[1202])
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col="#111820",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", xaxs="i", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_stages[6] - endemics_early_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_stages[6] - endemics_early125_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_stages[6] - endemics_late_29_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+dev.off()
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col="#111820",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", xaxs="i", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_stages[6] - endemics_early_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_stages[6] - endemics_early125_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_stages[6] - endemics_late_29_stages[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+
+# Extinctions compared, using BII based on IUCN
+png("output/Scenario totals using bii_IUCN.png", width=480, height=480)
+rs <- 100/(endemics_base[1171] - endemics_base[1202])
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col="#111820",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_IUCN[6] - endemics_early_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_IUCN[6] - endemics_early125_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_IUCN[6] - endemics_late_29_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+dev.off()
+plot(rs*(endemics_base[1171] - endemics_base[1171:1251])~c(2020:2100), type="l", lwd=3, col="#111820",
+     ylab="Relative extinctions between 2020 and 2050", xlab="Year", cex.lab=1.3, xlim=c(2020, 2050), ylim=c(0,100))
+points(rs*(endemics_early_IUCN[6] - endemics_early_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#002c5c")
+points(rs*(endemics_early125_IUCN[6] - endemics_early125_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#215732")
+points(rs*(endemics_late_29_IUCN[6] - endemics_late_29_IUCN[6:86]) ~ c(2020:2100), type="l", lwd=3, col="#00bfd6")
+text(2020, 93, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 83, "Immediate high-ambition action", col="#215732", pos=4, cex=1.2)
+text(2020, 88, "Delayed action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 98, "Baseline", col="#111820", pos=4, cex=1.2)
+
+
+
+
+endemics_base[1221]-endemics_base[1220]
+endemics_early[36]-endemics_early[35]
+# 34% reduction in the extinction *rate* by 2050
+endemics_early_125[36]-endemics_early_125[35]
+# 41% reduction in rate by 2050
+endemics_late_29[36] - endemics_late_29[35]
+# 41% reduction in extinction *rate* by 2050
+
+
+
+
+early_2050 <- raster("data/dasgupta-early-BIIAb-2050.tif")
+png("output/BII early, 2050.png", width=800, height=600)
+plot(early_2050, bty="n", xaxt="n", yaxt="n")
+dev.off()
+late_2050 <- raster("data/dasgupta-late_29-BIIAb-2050.tif")
+png("output/BII early-late29, 2050.png", width=800, height=600)
+plot(early_2050 - late_2050, bty="n", xaxt="n", yaxt="n")
+dev.off()
+
+bii <- read.csv("data/vivid-summary.csv")
+global <- subset(bii, Mask=="Global")
+png("output/Comparing BII across scenarios.png", width=480,height=480)
+ylims <- c(0.77, 0.795)
+plot(Mean ~ Year, data=subset(global, Scenario=="base"), type="l", xlim=c(2020, 2050), ylim=ylims, xaxs="i",
+     ylab="Global mean Biodiversity Intactness Index", xlab="Year", lwd=2, cex.lab=1.4, cex.axis=1.3, col=col_base)
+points(Mean ~ Year, data=subset(global, Scenario=="early"), type="l", lwd=2, col=col_early)
+points(Mean ~ Year, data=subset(global, Scenario=="early_125"), type="l", lwd=2, col=col_early_125)
+points(Mean ~ Year, data=subset(global, Scenario=="late_29"), type="l", lwd=2, col=col_late)
+text(2020, 0.776, "Immediate high-ambition action", col=col_early_125, pos=4, cex=1.2)
+text(2020, 0.774, "Immediate action", col=col_early, pos=4, cex=1.2)
+text(2020, 0.772, "Delayed action", col=col_late, pos=4, cex=1.2)
+text(2020, 0.77, "Baseline", col=col_base, pos=4, cex=1.2)
+dev.off()
+plot(Mean ~ Year, data=subset(global, Scenario=="base"), type="l", xlim=c(2020, 2050), ylim=ylims, xaxs="i",
+     ylab="Global mean Biodiversity Intactness Index", xlab="Year", lwd=2, cex.lab=1.4, cex.axis=1.3, col="#111820")
+points(Mean ~ Year, data=subset(global, Scenario=="early"), type="l", lwd=2, col="#002c5c")
+points(Mean ~ Year, data=subset(global, Scenario=="early_125"), type="l", lwd=2, col="#215732")
+points(Mean ~ Year, data=subset(global, Scenario=="late_29"), type="l", lwd=2, col="#00bfd6")
+text(2020, 0.776, "Immediate ambitious action", col="#215732", pos=4, cex=1.2)
+text(2020, 0.774, "Immediate action", col="#002c5c", pos=4, cex=1.2)
+text(2020, 0.772, "Late action", col="#00bfd6", pos=4, cex=1.2)
+text(2020, 0.77, "Baseline", col="#111820", pos=4, cex=1.2)
+
+
+# Plot of extinction debt in 2020
+s2020 <- S_t_base[,,which(each_year==2020)]
+s850 <- S_t_base[,,1]
+c_array <- s850/base_area[,,1]^this.z
+seq_2020 = c_array* base_area[,,which(each_year==2020)]^this.z
+extinction_debt_2020_base <- s2020-seq_2020
+ped<-extinction_debt_2020_base[,] == abs(extinction_debt_2020_base[,])
+extinction_debt_2020_base <- extinction_debt_2020_base * ped
+png("output/Extinction debt in 2020 base.png", width=800, height=600)
+image(t(extinction_debt_2020_base), ylim=c(1,0), bty="n", xaxt="n", yaxt="n")
+dev.off()
+
+# Map of difference in extinctions between base and early
+benefit <- S_t_early[,, which(v_years==2050)] - S_t_base[,,which(each_year==2050)]
+image(t(benefit < 0), ylim=c(1,0), bty="n", xaxt="n", yaxt="n") #Noise not signal
+
+pb <- benefit[,]>=0
+png("output/Extinction benefit of early over base.png", width=800, height=600)
+image(t(log(benefit * pb +1)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n")
+dev.off()
+```
+

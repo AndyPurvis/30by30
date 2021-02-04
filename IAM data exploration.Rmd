@@ -15,7 +15,6 @@ output:
     toc_depth: 2
     toc_float: true
     number_sections: true
-
 ---
 
 ```{r setup, include=FALSE}
@@ -44,21 +43,26 @@ As an example, I will read one of the action scenarios from MAgPIE. MAgPIE is th
 
 ```{r, read_example, echo=FALSE, cache=TRUE}
 eg_data <- nc_open("data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
-cat("Metadata for the file:\n")
-print(eg_data) #Metadata
-cat("\nWhich years have land-use data:\n")
+cat("MAGPIE version of GDN scenario:\n")
+cat("\nYears with land-use data:\n")
 print(eg_data$dim$time$vals) # Which years
 cat("\nList of land-use classes\n")
 print(strsplit(eg_data$dim$lc_class$units, "/"))
 ```
 # Read the same scenario from a different IAM
 This is necessary to check whether all the IAMs are using the same land-use classes
-```{r, read_example, echo=FALSE, cache=TRUE}
+```{r, read_second_example, echo=FALSE, cache=TRUE}
 eg2_data <- nc_open("data/IAM outputs for 30 by 30 scenarios/IMAGE/BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
-cat("Metadata for the file:\n")
-print(eg2_data) #Metadata
-cat("\nWhich years have land-use data:\n")
+cat("IMAGE version of GDN scenario:\n")
+cat("\nYears with land-use data:\n")
 print(eg2_data$dim$time$vals) # Which years
 cat("\nList of land-use classes\n")
 print(strsplit(eg2_data$dim$lc_class$units, "/"))
 ```
+
+# Conclusions
+Both IAMs use the same 12 land-use classes, and cover the same time interval (2010-2100 in 5-year intervals).
+
+# Questions arising
+1. What is the time period that our analysis should cover -- just to 2050, or all the way to 2100?
+2. Can I use models I already have to hand to estimate defensible BII values for all 12 land-use classes?

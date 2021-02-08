@@ -1,0 +1,112 @@
+---
+title: "Calculating BII coefficients"
+author: "Andy Purvis"
+date: "08/02/2021"
+output:
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Calculating BII coefficients
+
+This analyses the BII coefficients for MAgPIE land-uses from Hill et al. (2018), from the file BII_coefs_PREDICTS_mapping_R2_final_HillEtAlBioRXiv2018.csv, to calculate coefficients suitable for habitat-specialist endemic species. By assertion, several of the land uses cannot sustain habitat-specialist endemics, meaning their BII is zero. This provides a basis for rescaling the BIi values from those used by Hill et al. (2018), as their values for human-dominated land-uses are much too high for use with endemic habitat specialists. Note that the highest BII values need not be 1, as even unmanaged land may still be used and therefore impacted.
+
+
+## Coefficients from Hill et al. (2018)
+```{r cache=TRUE, read-and-show, echo=FALSE}
+bii_in <- read.csv("data/BII_coefs_PREDICTS_mapping_R2_final_HillEtAlBioRXiv2018.csv")
+# Cap values at 1 for logical reasons
+bii_in$BII[bii_in$BII > 1] <- 1
+knitr::kable(bii_in, digits=3, caption = "BII values from Hill et al. (2018) and LeClere et al. (2018)")
+```
+
+## Deriving BII coefficients for use in this analysis
+Hill et al. (2018) and LeClere et al. (2020) present BII coefficients for different PREDICTS and IAM land-use classes, for forested and non-forested biomes separately. The first eight IAM land-use classes were also present in LeClere et al.'s (2020) analysis; here, we use the average of forest and non-forest coefficients together for those land-use classes present in both types of biome. For the last four land-use classes (various kinds of abandoned land), we averaged the forest and non-forest coefficients for Young Secondary Vegetation, from Extended Data Figure 1 of LeClere et al. (2020); this is reasonable given that no land is in any of these classes prior to 2025. A more sophisticated treatment would be to accommodate the maturation of the secondary vegetation on abandoned land, as in De Palma et al. (in prep.), but that level of complexity is beyond the scope of this analysis. The simpler treatment is justified by the small fraction of abandoned land (though I've not only looked at one scenario so far).
+
+Because this analysis explicitly focuses on habitat-specialist endemic species, the BII values obtained above are overoptimistic, as they include generalist native species. For habitat-specialist endemics, at least the most damaging land use should be associated with a BII of zero. We explored two ways to rescale the BII values from Hill et al. (2018) and LeClere et al. (2020):
+
+1. Rescale so that only the land use with the lowest BII value (BII~min~) has a BII of zero. For each land-use class, the rescaled BII (BII_crop0) is given as $\frac{BII_{Hill} - BII_{min}}{1 - BII_{min}}$
+2. Rescale so that all human-dominated land uses (cropland_other, cropland_2Gbioen, grassland and built-up) have a BII of zero. In this case, the mean BII~Hill~ of these four classes, BII~humdom~ is used for rescaling the BII values for the other land-use classes according to $\frac{BII_{Hill} - BII_{humdom}}{1 - BII_{humdom}}$
+
+In the table that follows, Hill = BII~Hill~, BII_crop0 = BII~Hill~ rescaled so that only the worst land-use class has a value of zero, and BII_humdom0 = BII~Hill~ rescaled such that all human-dominated land-use classes have values of zero.
+
+• To do: Get the precise values for the Young Secondary Vegetation from LeClere et al. (2020) Extended Data Figure 1.
+```{r make-estimates, echo=FALSE}
+WLU <- read.csv("data/WaldronLanduseClasses.csv")
+WLU$Hill <- NA
+WLU$BII_crop0 <- NA
+WLU$BII_humdom0 <- NA
+
+#cropland_other
+WLU$Hill[1] <- 0.5 * ((bii_in[1,3]*bii_in[1,4] + bii_in[2,3]*bii_in[2,4]) + (bii_in[3,3]*bii_in[3,4] + bii_in[4,3]*bii_in[4,4]))
+
+#cropland_2Gbioen
+WLU$Hill[2] <- 0.5 * (bii_in[5,3]*bii_in[5,4] + bii_in[6,3]*bii_in[6,4]) 
+
+# grassland
+WLU$Hill[3] <- 0.5 * (bii_in[7,3]*bii_in[7,4] + bii_in[8,3]*bii_in[8,4])
+
+# forest_unmanaged
+WLU$Hill[4] <- bii_in[9,3]*bii_in[9,4] + bii_in[10,3]*bii_in[10,4]
+
+# forest_managed
+WLU$Hill[5] <- bii_in[11,3]*bii_in[11,4] + bii_in[12,3]*bii_in[12,4]
+
+# restored
+WLU$Hill[6] <- 0.5 * (bii_in[13,3]*bii_in[13,4] + bii_in[14,3]*bii_in[14,4])
+
+# other
+WLU$Hill[7] <- 0.5 * (bii_in[15,3]*bii_in[15,4] + bii_in[16,3]*bii_in[16,4] +
+  bii_in[17,3] * bii_in[17,4])
+
+# built-up
+WLU$Hill[8] <- 0.5 * (bii_in[18,3]*bii_in[18,4] + bii_in[19,3]*bii_in[19,4])
+
+# abandoned land uses (4 classes)
+YSV_f <- 0.875 # By eye from LeClere et al. 2020 Nature, Ext Data Fig 1
+YSV_nf <- 0.77 # By eye from LeClere et al. 2020 Nature, Ext Data Fig 1
+mean_YSV <- (YSV_f + YSV_nf)/2
+WLU$Hill[9:12] <- mean_YSV
+
+# Two ways to rescale these
+# 1. Rescale so that just the minimal value (cropland_other) becomes zero
+minBII <- min(WLU$Hill)
+WLU$BII_crop0 <- (WLU$Hill - minBII)/(1 - minBII)
+
+# 2. Rescale so all human-dominated land-uses become zero
+# Which classes have BII = 0 for endemic habitat-specialists
+inimical <- c(1, 2, 3, 8)
+zero <- mean(WLU$Hill[inimical])
+WLU$BII_humdom0 <- (WLU$Hill - zero)/(1 - zero)
+WLU$BII_humdom0[inimical] <- 0
+
+knitr::kable(WLU, digits=3, caption = "BII values from Hill et al. (2018) & LeClere et al. (2020), and two possible sets of rescaled values")
+
+write.csv(WLU, "output/Rescaled_BII_values_for_IAM_classes.csv")
+
+```
+
+## Evaluation
+*Advantages of BII_crop0*
+• Given that grassland includes rangeland (as well as managed pasture), the non-zero BII value may be more reasonable
+
+*Advantages of BII_humdom0*
+• Zero BII for built-up areas seems more reasonable than a value nearly three times higher than that for grassland
+• Although a BII of zero for cropland_2Gbioen may be unrealistically low, a BII of 0.57 seems very high for what is after all an often intensive agricultural land use
+
+My feeling is that both are reasonably easy to describe and defend methodologically, but that BII_humdom0 provides a set of coefficients that seem more biologically reasonable.
+

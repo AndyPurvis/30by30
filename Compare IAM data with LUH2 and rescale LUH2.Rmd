@@ -1,0 +1,73 @@
+---
+title: "Compare IAM data with LUH2 and rescale LUH2"
+author: "Andy Purvis"
+date: "09/02/2021"
+output:
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Comparison of IAM data with LUH2 data and rescaling of LUH2 data
+Although IAM data and LUH2 data are not expected to be entirely congruent during the years for which both are available, they are expected to be strongly correlated -- both are conditioned on the same current global pattern of land use, albeit slightly different interpretations of that pattern. The logic of the dynamic species-area model requires that the history of land use (provided by LUH2) melds reasonably well with the scenario-dependent future of land use (provided by the IAMs). The approach taken here is to rescale LUH2 data so that it exactly matches the IAM data for the year 2010. But before that rescaling, it is sensible to test that the correlation across grid cells between IAM and LUH2 data is reasonable.
+
+```{r, load, echo=FALSE, cache=TRUE}
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+```
+
+```{r, set-params, echo=FALSE, cache=TRUE}
+bii_sec <- mean(c(0.9335480, 1, 0.7577225)) # mean = 0.8970902, following De Palma et al. (in prep.)
+luh2_years <- seq(850, 2015, by = 5)
+iam_years <- seq(2010, 2100, by = 5)
+
+```
+## Loading in LUH2 data, calculating effective natural area and plot map for 2010
+
+```{r, load-luh2, echo=FALSE, cache=TRUE}
+# Read in historical LUH2 data
+cell_area_raster <- raster("data/cell-area.tif") #total area of each cell; producted for De Palma et al. (in prep.)
+cell_land_area <- raster("data/land-2.tif") # land area of each cell; producted for De Palma et al. (in prep.)
+pri <- stack("data/historical-primary.tif") # producted for De Palma et al. (in prep.)
+sec <- stack("data/historical-secondary.tif") # produced for De Palma et al. (in prep.)
+
+# Calculate effective natural area
+luh2_fraction <- clamp(pri + bii_sec * sec, lower=0, upper=1, useValues=TRUE)
+luh2_area <- luh2_fraction * cell_area_raster
+
+plot(luh2_area, y=nlayers(luh2_area)-1) # 2010
+```
+
+## Compare with IAM data for 2010
+
+```{r, compare-iam, echo=FALSE, cache=TRUE}
+iam <- stack("output/ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+plot(iam, y=1) # 2010
+source("00_functions.R")
+bluered.plot()
+
+  
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

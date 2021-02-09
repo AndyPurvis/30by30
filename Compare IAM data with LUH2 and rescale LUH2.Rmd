@@ -47,14 +47,13 @@ iam_years <- seq(2010, 2100, by = 5)
 
 ```{r, load-luh2, echo=FALSE, cache=TRUE}
 # Read in historical LUH2 data
-cell_area_raster <- raster("data/cell-area.tif") #total area of each cell; producted for De Palma et al. (in prep.)
-cell_land_area <- raster("data/land-2.tif") # land area of each cell; producted for De Palma et al. (in prep.)
+cell_areas <- raster("output/Waldron_cell_areas") # from one of the IAM netCDFs, saved earlier
 pri <- stack("data/historical-primary.tif") # producted for De Palma et al. (in prep.)
 sec <- stack("data/historical-secondary.tif") # produced for De Palma et al. (in prep.)
 
 # Calculate effective natural area
 luh2_fraction <- clamp(pri + bii_sec * sec, lower=0, upper=1, useValues=TRUE)
-luh2_area <- luh2_fraction * cell_area_raster
+luh2_area <- luh2_fraction * cell_areas
 
 plot(luh2_area, y=nlayers(luh2_area)-1) # 2010
 ```

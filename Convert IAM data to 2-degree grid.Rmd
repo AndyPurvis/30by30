@@ -169,8 +169,15 @@ print("Calculated the area")
 if (require(ncdf4)) {	
      rnc <- writeRaster(effective_natural_area, filename=file.path("output", paste("ENA", which_bii, scenario, sep="_")), format="CDF", overwrite=TRUE) 
 }
+
 b <- Sys.time()
 print(paste("Elapsed time:", b-a))
+```
+```{r, write-cell-area, echo=FALSE, cache=TRUE}
+# Write cell areas as useful in later steps
+if (require(ncdf4)) {	
+     rnc <- writeRaster(cell_areas, filename=file.path("output", "Waldron_cell_areas.nc"), format="CDF", overwrite=TRUE) 
+}
 ```
 
 

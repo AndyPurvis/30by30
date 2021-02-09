@@ -38,9 +38,14 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# Data folder
+# Project folders
 /data
+/output
+/figs
+/reports
 
 # pdfs
 *.pdf
 
+# htmls
+*.html

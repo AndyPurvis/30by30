@@ -1,13 +1,8 @@
 ---
-title: "Convert IAM data to 2-degree grid"
+title: "Convert IAM data to effective natural area on a 2-degree grid"
 author: "Andy Purvis"
 date: "07/02/2021"
 output:
-  pdf_document:
-    df_print: kable
-    toc: true
-    toc_depth: 2
-    number_sections: true
   html_document: 
     df_print: paged
     code_folding: hide
@@ -15,14 +10,19 @@ output:
     toc_depth: 2
     toc_float: true
     number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Converting IAM data into 2-degree grid
-## Source of data
+# Converting IAM data into effective natural area on a 2-degree grid
+## Source of IAM data
 These IAM outputs were downloaded from https://drive.google.com/drive/folders/1k6mVe8rQc29dh4MZkxhPCDuhp38dV_dF on 2021-02-03, and are described in two emails from Anthony Waldron. The unzipped data, in its original folder structure, is within the "/data" folder.
 
 ## Load the required libraries and functions
@@ -37,36 +37,140 @@ library(colorspace)
 library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
 library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
 library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
-library(ncdf.tools) # https://rdrr.io/cran/ncdf.tools/man/plotDatacube.html
 source("00_functions.R")
 ```
+
+
+```{r, new-functions, echo=FALSE, cache=TRUE}
+biplot <- function(brick, LU){
+  plot(brick, 1, ylim=c(-90,90), axes=FALSE, main = paste(LU, "in 2010"))
+  plot(seq(2010,2100,5), as.numeric(cellStats(brick, sum)), ylab = "Total area (Mha)", xlab="Year", main=LU)
+}
+
+```
+
 # Read an example data set
-As an example, I will read one of the action scenarios from MAgPIE. MAgPIE is the IAM whose output I am most likely to be able to use easily, but the reference scenario would be a bad choice as not all land uses would be represented.
+This example is the GDN scenario from MAgPIE. For each land-use class in turn, the left-hand figure maps the area within each 2$^\circ$ grid cell, while the right-hand figure shows the time series of global area from 2010 to 2100.
 
-```{r, read_example, echo=FALSE, cache=TRUE}
-iam_file <- "data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"
+```{r, read_example, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
+a <- Sys.time()
+folder <- "data/IAM outputs for 30 by 30 scenarios"
+iam <- "MAGPIE"
+scenario <- "BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"
+iam_file <- paste(folder, iam, scenario, sep="/")
+print(iam_file)
 
+# Read in cell areas
+cell_areas <- raster(iam_file, varname = "pixel_area")
+
+#Set par for two plots side by site
+par(mar = c(4, 4, .1, .1))
+
+# Multiply cell land-use fractions by cell area before summing into 2-degree grids
 crop_other <- aggregate(brick(iam_file, 
-                 varname="LC_area_share", lvar = 3, nl=19, level=1), 
-                 fact = 4, fun = mean)
+                 varname="LC_area_share", lvar = 3, nl=19, level=1) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(crop_other, "crop_other")
 
-crop_bioen <- aggregate(brick(iam_file, 
-                 varname="LC_area_share", lvar = 3, nl=19, level=2), 
-                 fact = 4, fun = mean)
+crop_2Gbioen <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=2) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(crop_2Gbioen, "crop_2Gbioen")
+
+grassland <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=3) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(grassland, "grassland")
+
+forest_unmanaged <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=4) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(forest_unmanaged, "forest_unmanaged")
+
+forest_managed <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=5) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(forest_managed, "forest_managed")
 
 restored <- aggregate(brick(iam_file, 
-                 varname="LC_area_share", lvar = 3, nl=19, level=6), 
-                 fact = 4, fun = mean)
+                 varname="LC_area_share", lvar = 3, nl=19, level=6) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(restored, "restored")
 
-plot(crop_other, 1)
-plot(crop_bioen, 1)
-plot(restored)
+other <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=7) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(other, "other")
 
-plot(seq(2010,2100,5), as.numeric(cellStats(crop_bioen, sum)))
+built_up <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=8) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(built_up, "built_up")
 
-eg_data <- brick("data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+abn_cropland_other <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=9) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(abn_cropland_other, "abn_cropland_other")
 
+abn_cropland_2Gbioen <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=10) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(abn_cropland_2Gbioen, "abn_cropland_2Gbioen")
 
-eg_stack <- stack("data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc",level=10)
-plot(eg_stack, 1)
+abn_grassland <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=11) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(abn_grassland, "abn_grassland")
+
+abn_forest_managed <- aggregate(brick(iam_file, 
+                 varname="LC_area_share", lvar = 3, nl=19, level=12) * cell_areas, 
+                 fact = 4, fun = sum)
+biplot(abn_forest_managed, "abn_forest_managed")
+
 ```
+
+## Convert to effective area of natural habitat
+The twelve raster stacks need to be combined with their respective BII coefficients to convert them to effective areas of natural habitat for each of the 19 years of interest. The BII coefficients are read in from "Rescaled_BII_values_for_IAM_classes.csv", having been produced earlier; as written here, the values in BII_humdom0 are used. The resulting raster stack is written as a netCDF, whose file name begins "ENA_" (for effective natural area) and then the BII choice (either BII_crop0 or BII_humdom0), to ensure transparency. (Other values for BII choice are not permitted and deliberately cause an error - an exact match is required.)
+
+```{r, calculate-effective-natural-area, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
+# Read in file of BII values
+bii_coefficients <- read.csv("output/Rescaled_BII_values_for_IAM_classes.csv")
+print("Read the bii file in")
+
+# Choose which of two rescalings to use
+which_bii <- "BII_humdom0"
+if(which_bii %in% c("BII_crop0", "BII_humdom0") == FALSE){
+  stop("Invalid value for which_bii")
+}
+
+if (which_bii == "BII_humdom0"){
+  bii <- bii_coefficients$BII_humdom0
+}else{
+  bii <- bii_coefficients$BII_crop0
+}
+
+# Multiply each raster by its BII and add the products together
+effective_natural_area <- crop_other * bii[1] +
+  crop_2Gbioen * bii[2] +
+  grassland * bii[3] +
+  forest_unmanaged * bii[4] +
+  forest_managed * bii[5] +
+  restored * bii[6] +
+  other * bii[7] +
+  built_up * bii[8] +
+  abn_cropland_other * bii[9] +
+  abn_cropland_2Gbioen * bii[10] +
+  abn_grassland * bii[11] +
+  abn_forest_managed * bii[12]
+biplot(effective_natural_area, "Natural")
+print("Calculated the area")
+
+# Write to file, including the choice of BII values in the file name
+if (require(ncdf4)) {	
+     rnc <- writeRaster(effective_natural_area, filename=file.path("output", paste("ENA", which_bii, scenario, sep="_")), format="CDF", overwrite=TRUE) 
+}
+b <- Sys.time()
+print(paste("Elapsed time:", b-a))
+```
+
+

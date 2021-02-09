@@ -43,6 +43,7 @@ As an example, I will read one of the action scenarios from MAgPIE. MAgPIE is th
 
 ```{r, read_example, echo=FALSE, cache=TRUE}
 eg_data <- nc_open("data/IAM outputs for 30 by 30 scenarios/MAGPIE/BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+print(eg_data)
 cat("MAGPIE version of GDN scenario:\n")
 cat("\nYears with land-use data:\n")
 print(eg_data$dim$time$vals) # Which years

@@ -2,7 +2,9 @@
 title: "Comparing tiff and netCDF IAM data"
 author: "Andy Purvis"
 date: "10/02/2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -23,13 +25,15 @@ library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com
 library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
 library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
 source("00_functions.R")
+par(mar = c(5,4,4,2)+0.1) # Default
+
 ```
 
 ## Load LUH2 effective natural area
 This map shows the effective area of natural habitat per 2$^\circ$ grid cell for the year 2010, as estimated previously from just the LUH2 data used in De Palma et al. (in prep.).
 ```{r read-luh2}
-luh2_ena <- stack("output/ENA_LUH2.nc")
-plot(luh2_ena, 233, main = "LUH2 ENA in 2010")
+luh2_ena <- raster::stack("output/ENA_LUH2.nc")
+plot(raster::subset(luh2_ena, 233), main = "LUH2 ENA in 2010")
 ```
 
 ## Load tiff for same IAM/scenario combination as used in previous examples
@@ -37,7 +41,7 @@ Unfortunately, there has been a "Chinese whispers" situation with the organisati
 
 Each of the rasters is mapped below. Note that there are only 11 rasters: none was provided for abn_crop2Gbioen. It is unclear whether that's an omission or has happened because this year, scenario and/or IAM has none of it. None is expected prior to 2020 anyway, so its lack should not affect the comparison with LUH2 and the netCDF data.
 
-```{r read-iam, echo=FALSE}
+```{r read-iam, echo=FALSE, hold=FALSE}
 stem <- "data/IAM_FinalScenarios_rasters"
 iamID <- "MAGPIE_rasters"
 scenario <- "GDN"
@@ -138,8 +142,12 @@ if (require(ncdf4)) {
      rnc <- writeRaster(effective_natural_area, filename=file.path("output", paste("ENA_from_tif_", which_bii, scenario, sep="_")), format="CDF", overwrite=TRUE) 
 }
 tif_ENA <- effective_natural_area
+
 ```
+
+
 ## Compare tif-derived and netCDF-derived estimates of effective natural area in 2010
+
 The map of netCDF-derived estimates of effective natural area is identical, with exactly the same cells having missing values.
 ```{r, compare-effective-natural-area, echo=FALSE, cache=TRUE}
 netCDF_ENA <- subset(stack(file.path("output", "ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")), 1)

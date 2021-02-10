@@ -67,6 +67,7 @@ cell_areas <- raster(iam_file, varname = "pixel_area")
 par(mar = c(4, 4, .1, .1))
 
 # Multiply cell land-use fractions by cell area before summing into 2-degree grids
+# Note that, by default, aggregate has na.rm=TRUE, which is what I want as land-free cells are NA
 crop_other <- aggregate(brick(iam_file, 
                  varname="LC_area_share", lvar = 3, nl=19, level=1) * cell_areas, 
                  fact = 4, fun = sum)

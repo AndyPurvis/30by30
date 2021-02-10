@@ -62,6 +62,7 @@ map(add=TRUE)
 ```
 
 ## Compare with IAM data for 2010
+• N.B. New plots added since this text was updated!
 The first plot shows the effective natural area in 2010 according to the IAM used in the earlier examples. The second plot shows the equivalent map for the LUH2 data, and the third shows the difference (as LUH2 - IAM). Note that many cells have large differences. Note also that the top two maps have different sets of pixels (most obvious when looking at Greenland). The fourth plot shows the cellwise correlation between the two data sets with the 1:1 line. If NAs are treated as zeroes, the correlation is 0.887; if left as NAs it is 0.72 -- both markedly lower than in the Dasgupta work (where the correlation was 0.976). This is disconcertingly low, and requires checking before going on to harmonise the effective area data between the two sources. 
 
 • Checking the BII coefficients for the IAM land uses revealed no errors.
@@ -71,29 +72,55 @@ The last three maps show the masks: first, cells that are NA in LUH2 only; then 
 
 ```{r, compare-iam, echo=FALSE, cache=TRUE}
 iam <- stack(file.path("output", "ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"))
+iam_crop0 <- stack(file.path("output", "ENA_BII_crop0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"))
+
 iam_2010 <- subset(iam, 1)
+iam_crop0_2010 <- subset(iam_crop0, 1)
 luh2_2010 <- subset(luh2_area, 233)
 par(mar = c(5,4,4,2)+0.1) # Default
 
-plot(iam_2010, main="IAM effective natural area, 2010")
+plot(iam_2010, main="IAM humdom0 effective natural area, 2010")
+map(add=TRUE)
+plot(iam_crop0_2010, main ="IAM crop0 effective natural area, 2010")
 map(add=TRUE)
 plot(luh2_2010, main = "LUH2 effective natural area, 2010")
 map(add=TRUE)
-plot(luh2_2010 - iam_2010, main = "LUH2 - IAM in 2010")
+plot(luh2_2010 - iam_2010, main = "LUH2 - IAM humdom0 in 2010")
 map(add=TRUE)
+plot(luh2_2010 - iam_crop0_2010, main = "LUH2 - IAM crop0 in 2010")
+map(add=TRUE)
+
+bigdiff_humdom0 <- ((iam_2010 - luh2_2010)^2 > 1)
+plot(bigdiff_humdom0, main = "Absolute difference > 1 Mha: BII_humdom0")
+bigdiff_crop0 <- ((iam_crop0_2010 - luh2_2010)^2 > 1)
+plot(bigdiff_crop0, main = "Absolute difference > 1 Mha: BII_crop0")
 
 y1 <- getValues(luh2_2010)
 y2 <- getValues(iam_2010)
 valid <- !is.na(y1 * y2)
-print(paste("Cell-wise correlation excluding NAs:", cor(y1[valid], y2[valid])))
+print(paste("Cell-wise correlation (humdom0) excluding NAs:", cor(y1[valid], y2[valid])))
 
 y1[is.na(y1)] <- 0
 y2[is.na(y2)] <- 0
-print(paste("Cell-wise correlation with NAs set to zero:", cor(y1, y2)))
+print(paste("Cell-wise correlation (humdom0) with NAs set to zero:", cor(y1, y2)))
 
 
-plot(y1~y2, ylab="LUH2 in 2010", xlab="IAM in 2010")
+plot(y1~y2, ylab="LUH2 in 2010", xlab="IAM humdom0 in 2010")
 abline(a=0,b=1, col="red")
+
+y1 <- getValues(luh2_2010)
+y2 <- getValues(iam_crop0_2010)
+valid <- !is.na(y1 * y2)
+print(paste("Cell-wise correlation (crop0) excluding NAs:", cor(y1[valid], y2[valid])))
+
+y1[is.na(y1)] <- 0
+y2[is.na(y2)] <- 0
+print(paste("Cell-wise correlation (crop0) with NAs set to zero:", cor(y1, y2)))
+
+
+plot(y1~y2, ylab="LUH2 in 2010", xlab="IAM crop0 in 2010")
+abline(a=0,b=1, col="red")
+
 
 # 709 cells are NA in the IAMs but have values in LUH2 - where are they?
 na_in_iam_only <- (is.na(iam_2010) & !is.na(luh2_2010))
@@ -105,7 +132,9 @@ plot(na_in_luh2_only, main = "NA in LUH2 only")
 map(add=TRUE)
 plot(na_in_both, main = "NA in both IAM and LUH2")
 map(add=TRUE)
+
 ```
+
 ```{r, write_luh2_ENA, echo=FALSE, cache=TRUE}
 if (require(ncdf4)) {	
      rnc <- writeRaster(luh2_area, filename=file.path("output", "ENA_LUH2.nc"), format="CDF", overwrite=TRUE) 

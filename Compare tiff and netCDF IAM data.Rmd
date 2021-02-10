@@ -1,0 +1,42 @@
+---
+title: "Comparing tiff and netCDF IAM data"
+author: "Andy Purvis"
+date: "10/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Comparing tiff and netCDF IAM data
+
+```{r, load, echo=FALSE, cache=TRUE}
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+```
+
+## Load LUH2 effective natural area
+This map shows the effective area of natural habitat per 2$^\circ$ grid cell for the year 2010, as estimated previously from just the LUH2 data used in De Palma et al. (in prep.).
+```{r read-luh2}
+luh2_ena <- stack("output/ENA_LUH2.nc")
+plot(luh2_ena, 233, main = "LUH2 ENA in 2010")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

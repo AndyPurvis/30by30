@@ -70,7 +70,7 @@ The first plot shows the effective natural area in 2010 according to the IAM use
 The last three maps show the masks: first, cells that are NA in LUH2 only; then cells that are NA in the IAM data only; and lastly cells that are NA in both data sets.
 
 ```{r, compare-iam, echo=FALSE, cache=TRUE}
-iam <- stack("output/ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
+iam <- stack(file.path("output", "ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"))
 iam_2010 <- subset(iam, 1)
 luh2_2010 <- subset(luh2_area, 233)
 par(mar = c(5,4,4,2)+0.1) # Default
@@ -105,4 +105,10 @@ plot(na_in_luh2_only, main = "NA in LUH2 only")
 map(add=TRUE)
 plot(na_in_both, main = "NA in both IAM and LUH2")
 map(add=TRUE)
+```
+```{r, write_luh2_ENA, echo=FALSE, cache=TRUE}
+if (require(ncdf4)) {	
+     rnc <- writeRaster(luh2_area, filename=file.path("output", "ENA_LUH2.nc"), format="CDF", overwrite=TRUE) 
+}
+
 ```

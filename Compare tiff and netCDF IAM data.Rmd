@@ -18,6 +18,7 @@ library(scales)
 library(abind)
 library(gplots)
 library(colorspace)
+library(maps)
 library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
 library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
 library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
@@ -31,12 +32,122 @@ luh2_ena <- stack("output/ENA_LUH2.nc")
 plot(luh2_ena, 233, main = "LUH2 ENA in 2010")
 ```
 
-## Including Plots
+## Load tiff for same IAM/scenario combination as used in previous examples
+Unfortunately, there has been a "Chinese whispers" situation with the organisation of the tifs. Rather than having a stack for each land use, I have been provided with 12 snapshots for each decade. That will cause a problem if I have to construct the time series myself, but does not cause any particular problems for estimating the effective natural area for the year 2010.
 
-You can also embed plots, for example:
+Each of the rasters is mapped below. Note that there are only 11 rasters: none was provided for abn_crop2Gbioen. It is unclear whether that's an omission or has happened because this year, scenario and/or IAM has none of it. None is expected prior to 2020 anyway, so its lack should not affect the comparison with LUH2 and the netCDF data.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r read-iam, echo=FALSE}
+stem <- "data/IAM_FinalScenarios_rasters"
+iamID <- "MAGPIE_rasters"
+scenario <- "GDN"
+year <- "2010"
+cell_areas <- raster(file.path(stem,iamID,scenario,"MAGPIE_GDN_all_area.tif"))
+
+# Read in the twelve rasters
+# Multiply cell land-use fractions by cell area before summing into 2-degree grids
+crop_other <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_cropland_other_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(crop_other, main = "crop_other")
+
+crop_2Gbioen <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_cropland_2Gbioen_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(crop_2Gbioen, main = "crop_2Gbioen")
+
+grassland <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_grassland_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(grassland, main = "grassland")
+
+forest_unmanaged <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_forest_unmanaged_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(forest_unmanaged, main="forest_unmanaged")
+
+forest_managed <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_forest_managed_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(forest_managed, main="forest_managed")
+
+restored <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_restored_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(restored, main="restored")
+
+
+built_up <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_built-up_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(built_up, main="built_up")
+
+
+other <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_other_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(other, main="other")
+
+
+abn_cropland_other <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_abn_cropland_other_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(abn_cropland_other, main="abn_cropland_other")
+
+
+# There is no raster for abn_cropland_2Gbioen!
+
+
+abn_grassland <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_abn_grassland_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(abn_grassland, main="abn_grassland")
+
+
+abn_forest_managed <- aggregate(raster(file.path(stem,iamID,scenario,year,"MAGPIE_GDN_share_abn_forest_managed_2010.tif")) * cell_areas, 
+                 fact = 4, fun = sum)
+plot(abn_forest_managed, main="abn_forest_managed")
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Calculating effective natural area by combining these rasters with their corresponding rescaled BII estimates.
+```{r, calculate-effective-natural-area, echo=FALSE, cache=TRUE}
+# Read in file of BII values
+bii_coefficients <- read.csv("output/Rescaled_BII_values_for_IAM_classes.csv")
+print("Read the bii file in")
+
+# Choose which of two rescalings to use
+which_bii <- "BII_humdom0"
+if(which_bii %in% c("BII_crop0", "BII_humdom0") == FALSE){
+  stop("Invalid value for which_bii")
+}
+
+if (which_bii == "BII_humdom0"){
+  bii <- bii_coefficients$BII_humdom0
+}else{
+  bii <- bii_coefficients$BII_crop0
+}
+
+# Multiply each raster by its BII and add the products together
+effective_natural_area <- 
+  crop_other * bii[1] +
+  crop_2Gbioen * bii[2] +
+  grassland * bii[3] +
+  forest_unmanaged * bii[4] +
+  forest_managed * bii[5] +
+  restored * bii[6] +
+  other * bii[7] +
+  built_up * bii[8] +
+  abn_cropland_other * bii[9] +
+  abn_grassland * bii[11] +
+  abn_forest_managed * bii[12]
+plot(effective_natural_area, main="ENA derived from tif")
+map(add=TRUE)
+
+if (require(ncdf4)) {	
+     rnc <- writeRaster(effective_natural_area, filename=file.path("output", paste("ENA_from_tif_", which_bii, scenario, sep="_")), format="CDF", overwrite=TRUE) 
+}
+tif_ENA <- effective_natural_area
+```
+## Compare tif-derived and netCDF-derived estimates of effective natural area in 2010
+The map of netCDF-derived estimates of effective natural area is identical, with exactly the same cells having missing values.
+```{r, compare-effective-natural-area, echo=FALSE, cache=TRUE}
+netCDF_ENA <- subset(stack(file.path("output", "ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")), 1)
+plot(netCDF_ENA, main="ENA derived from netCDF")
+map(add=TRUE)
+
+plot(getValues(tif_ENA)~getValues(netCDF_ENA), ylab="From TIF", xlab="From netCDF")
+
+#The following condition will be true if and only if the same cells have missing values
+sum(is.na(getValues(tif_ENA))) == sum(is.na(getValues(tif_ENA)) & is.na(getValues(netCDF_ENA)))
+```

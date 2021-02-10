@@ -63,7 +63,7 @@ print(iam_file)
 # Read in cell areas
 cell_areas <- raster(iam_file, varname = "pixel_area")
 
-#Set par for two plots side by site
+#Set par for two plots side by side
 par(mar = c(4, 4, .1, .1))
 
 # Multiply cell land-use fractions by cell area before summing into 2-degree grids

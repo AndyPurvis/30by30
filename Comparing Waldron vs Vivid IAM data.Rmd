@@ -1,0 +1,93 @@
+---
+title: "Comparing Waldron vs Vivid IAM data"
+author: "Andy Purvis"
+date: "10/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Comparing Waldron vs Vivid IAM data
+To investigate the poor correlation between 2010 effective natural area maps in the IAM data with the LUH2 data, I am looking again at the 2010 data from the analyses in the Dasgupta report.
+
+```{r, load, echo=FALSE, cache=TRUE}
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(maps)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+par(mar = c(5,4,4,2)+0.1) # Default
+
+```
+
+
+```{r, set-params, echo=FALSE, cache=TRUE}
+bii_sec <- mean(c(0.9335480, 1, 0.7577225)) # mean = 0.8970902, following De Palma et al. (in prep.)
+v_years <- c(1985, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2070, 2080, 2090, 2100)
+
+
+```
+## Sources of data
+
+```{r, load-vivid, echo=FALSE, cache=TRUE}
+# Read in Vivid base scenario data
+cell_areas <- aggregate(raster("output/Waldron_cell_areas.nc"), fact = 4, fun=sum) # from one of the IAM netCDFs, saved earlier
+plot(cell_areas, main = "cell areas")
+pri <- stack("data/vivid-base-primary.tif") # producted for De Palma et al. (in prep.)
+plot(pri, y=5, main="Vivid primary, 2010")
+sec <- stack("data/vivid-base-secondary.tif") # produced for De Palma et al. (in prep.)
+plot(sec, y=5, main="Vivid secondary, 2010")
+
+# Calculate effective natural area
+vivid_fraction <- clamp(pri + bii_sec * sec, lower=0, upper=1, useValues=TRUE)
+vivid_area <- vivid_fraction * cell_areas
+
+plot(vivid_area, y=5, main="Vivid effective natural area in 2010") # 2010
+map(add=TRUE)
+```
+
+
+```{r, load-others, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
+luh2 <- raster("output/ENA_LUH2_2010")
+W_humdom0 <- raster("output/ENA_humdom0.nc")
+W_crop0 <- raster("output/ENA_crop0.nc")
+#Set par for two plots side by site
+par(mar = c(4, 4, .1, .1))
+
+plot(vivid_area, y=5, main="Vivid") # 2010
+map(add=TRUE)
+plot(luh2, main="LUH2")
+map(add=TRUE)
+plot(W_humdom0, main = "BII_humdom0")
+map(add=TRUE)
+plot(W_crop0, main = "BII_crop0")
+map(add=TRUE)
+
+vc <- getValues(subset(vivid_area, 5))
+lc <- getValues(luh2)
+hc <- getValues(W_humdom0)
+cc <- getValues(W_crop0)
+lv <- !is.na(vc*lc)
+lh <- !is.na(hc*lc)
+ch <- !is.na(cc*lc)
+
+plot(luh2, subset(vivid_area, 5), ylab="Vivid", xlab="LUH2") 
+text(0, 4.5, paste("r =", round(cor(vc[lv], lc[lv]), 3)), adj=0)
+abline(a=0,b=1, col="red")
+plot(luh2, W_humdom0, ylab="humdom0", xlab="LUH2")
+text(0, 4.5, paste("r =", round(cor(hc[lh], lc[lh]), 3)), adj=0)
+abline(a=0,b=1, col="red")
+plot(luh2, W_crop0, ylab="crop0", xlab="LUH2")
+text(0, 4.5, paste("r =", round(cor(cc[ch], lc[ch]), 3)), adj=0)
+abline(a=0,b=1, col="red")
+
+
+```

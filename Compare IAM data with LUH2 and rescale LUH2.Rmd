@@ -140,4 +140,16 @@ if (require(ncdf4)) {
      rnc <- writeRaster(luh2_area, filename=file.path("output", "ENA_LUH2.nc"), format="CDF", overwrite=TRUE) 
 }
 
+if (require(ncdf4)) {	
+     rnc <- writeRaster(luh2_2010, filename=file.path("output", "ENA_LUH2_2010.nc"), format="CDF", overwrite=TRUE) 
+}
+
+if (require(ncdf4)) {	
+     rnc <- writeRaster(iam_2010, filename=file.path("output", "ENA_humdom0.nc"), format="CDF", overwrite=TRUE) 
+}
+
+if (require(ncdf4)) {	
+     rnc <- writeRaster(iam_crop0_2010, filename=file.path("output", "ENA_crop0.nc"), format="CDF", overwrite=TRUE) 
+}
+
 ```

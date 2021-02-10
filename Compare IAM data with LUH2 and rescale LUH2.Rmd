@@ -31,6 +31,7 @@ library(scales)
 library(abind)
 library(gplots)
 library(colorspace)
+library(maps)
 library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
 library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
 library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
@@ -42,12 +43,13 @@ bii_sec <- mean(c(0.9335480, 1, 0.7577225)) # mean = 0.8970902, following De Pal
 luh2_years <- seq(850, 2015, by = 5)
 iam_years <- seq(2010, 2100, by = 5)
 
+
 ```
 ## Loading in LUH2 data, calculating effective natural area and plot map for 2010
 
 ```{r, load-luh2, echo=FALSE, cache=TRUE}
 # Read in historical LUH2 data
-cell_areas <- raster("output/Waldron_cell_areas") # from one of the IAM netCDFs, saved earlier
+cell_areas <- aggregate(raster("output/Waldron_cell_areas.nc"), fact = 4, fun=sum) # from one of the IAM netCDFs, saved earlier
 pri <- stack("data/historical-primary.tif") # producted for De Palma et al. (in prep.)
 sec <- stack("data/historical-secondary.tif") # produced for De Palma et al. (in prep.)
 
@@ -55,18 +57,52 @@ sec <- stack("data/historical-secondary.tif") # produced for De Palma et al. (in
 luh2_fraction <- clamp(pri + bii_sec * sec, lower=0, upper=1, useValues=TRUE)
 luh2_area <- luh2_fraction * cell_areas
 
-plot(luh2_area, y=nlayers(luh2_area)-1) # 2010
+plot(luh2_area, y=233, main="LUH2 effective natural area in 2010") # 2010
+map(add=TRUE)
 ```
 
 ## Compare with IAM data for 2010
+The first plot shows the effective natural area in 2010 according to the IAM used in the earlier examples. The second plot shows the equivalent map for the LUH2 data, and the third shows the difference (as LUH2 - IAM). Note that many cells have large differences. Note also that the top two maps have different sets of pixels (most obvious when looking at Greenland). The fourth plot shows the cellwise correlation between the two data sets with the 1:1 line. If NAs are treated as zeroes, the correlation is 0.887; if left as NAs it is 0.72 -- both markedly lower than in the Dasgupta work (where the correlation was 0.976). This is disconcertingly low, and requires checking before going on to harmonise the effective area data between the two sources. 
+
+• Checking the BII coefficients for the IAM land uses revealed no errors.
+• Although it cannot be the reason for the low correlation, the the different cell sets is interesting, and it will be necessary to check whether the masks are the same in all scenarios, IAMs and years.
+
+The last three maps show the masks: first, cells that are NA in LUH2 only; then cells that are NA in the IAM data only; and lastly cells that are NA in both data sets.
 
 ```{r, compare-iam, echo=FALSE, cache=TRUE}
 iam <- stack("output/ENA_BII_humdom0_BendingTheCurve30by30-LCproj-MAgPIE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc")
-plot(iam, y=1) # 2010
-source("00_functions.R")
-bluered.plot()
+iam_2010 <- subset(iam, 1)
+luh2_2010 <- subset(luh2_area, 233)
+par(mar = c(5,4,4,2)+0.1) # Default
 
-  
+plot(iam_2010, main="IAM effective natural area, 2010")
+map(add=TRUE)
+plot(luh2_2010, main = "LUH2 effective natural area, 2010")
+map(add=TRUE)
+plot(luh2_2010 - iam_2010, main = "LUH2 - IAM in 2010")
+map(add=TRUE)
+
+y1 <- getValues(luh2_2010)
+y2 <- getValues(iam_2010)
+valid <- !is.na(y1 * y2)
+print(paste("Cell-wise correlation excluding NAs:", cor(y1[valid], y2[valid])))
+
+y1[is.na(y1)] <- 0
+y2[is.na(y2)] <- 0
+print(paste("Cell-wise correlation with NAs set to zero:", cor(y1, y2)))
+
+
+plot(y1~y2, ylab="LUH2 in 2010", xlab="IAM in 2010")
+abline(a=0,b=1, col="red")
+
+# 709 cells are NA in the IAMs but have values in LUH2 - where are they?
+na_in_iam_only <- (is.na(iam_2010) & !is.na(luh2_2010))
+na_in_luh2_only <- (is.na(luh2_2010) & !is.na(iam_2010))
+na_in_both <- (is.na(luh2_2010) & is.na(iam_2010))
+plot(na_in_iam_only, main = "NA in IAM only")
+map(add=TRUE)
+plot(na_in_luh2_only, main = "NA in LUH2 only")
+map(add=TRUE)
+plot(na_in_both, main = "NA in both IAM and LUH2")
+map(add=TRUE)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

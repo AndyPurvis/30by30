@@ -2,7 +2,9 @@
 title: "Comparing Waldron vs Vivid IAM data"
 author: "Andy Purvis"
 date: "10/02/2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -35,16 +37,21 @@ v_years <- c(1985, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040, 2
 
 
 ```
-## Sources of data
+
+## Vivid data
+
+The data loaded and used here are from the base scenario, which is roughly SSP2. The fifth layer is for the year 2010, so that's the relevant one. The plots below show the fraction of each cell that is primary, then secondary; and then the effective natural area (discounting secondary to the tune of bii_sec, which is ~ 0.9).
 
 ```{r, load-vivid, echo=FALSE, cache=TRUE}
 # Read in Vivid base scenario data
 cell_areas <- aggregate(raster("output/Waldron_cell_areas.nc"), fact = 4, fun=sum) # from one of the IAM netCDFs, saved earlier
-plot(cell_areas, main = "cell areas")
 pri <- stack("data/vivid-base-primary.tif") # producted for De Palma et al. (in prep.)
 plot(pri, y=5, main="Vivid primary, 2010")
+map(add=TRUE)
+
 sec <- stack("data/vivid-base-secondary.tif") # produced for De Palma et al. (in prep.)
 plot(sec, y=5, main="Vivid secondary, 2010")
+map(add=TRUE)
 
 # Calculate effective natural area
 vivid_fraction <- clamp(pri + bii_sec * sec, lower=0, upper=1, useValues=TRUE)
@@ -54,9 +61,14 @@ plot(vivid_area, y=5, main="Vivid effective natural area in 2010") # 2010
 map(add=TRUE)
 ```
 
+## Comparators
+
+There are four sources of effective natural area estimates. Top left: Vivid. Top right: LUH2. Bottom left: IAM using BII_humdom0. Bottom right: IAM using BII_crop0.
+
+The scatterplots show the cell values from each plotted against the LUH2 estimates, with the correlation coefficients reported in the plotting frames.
 
 ```{r, load-others, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
-luh2 <- raster("output/ENA_LUH2_2010")
+luh2 <- raster("output/ENA_LUH2_2010.nc")
 W_humdom0 <- raster("output/ENA_humdom0.nc")
 W_crop0 <- raster("output/ENA_crop0.nc")
 #Set par for two plots side by site
@@ -91,3 +103,8 @@ abline(a=0,b=1, col="red")
 
 
 ```
+
+## Conclusion
+
+It is concerning that the correlation is so much lower than was the case with the Vivid IAM data. I guess that the reason is that these IAMs were not tuned to PREDICTS classes in the way that Vivid tuned MAgPIE. The map of humdom0 is markedly more like the LUH2 map, specifically in having *some* natural area even in grain belts; but the fit is nowhere near so good as in the Vivid data.
+

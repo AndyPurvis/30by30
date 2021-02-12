@@ -25,40 +25,40 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
   
   # Multiply cell land-use fractions by cell area before summing into 2-degree grids
   # Note that, by default, aggregate has na.rm=TRUE, which is what I want as land-free cells are NA
-  crop_other <- aggregate(brick(iam_file, 
+  crop_other <- aggregate(brick(iam_path, 
                                 varname="LC_area_share", lvar = 3, nl=19, level=1) * cell_areas, 
                           fact = 4, fun = sum)
-  crop_2Gbioen <- aggregate(brick(iam_file, 
+  crop_2Gbioen <- aggregate(brick(iam_path, 
                                   varname="LC_area_share", lvar = 3, nl=19, level=2) * cell_areas, 
                             fact = 4, fun = sum)
-  grassland <- aggregate(brick(iam_file, 
+  grassland <- aggregate(brick(iam_path, 
                                varname="LC_area_share", lvar = 3, nl=19, level=3) * cell_areas, 
                          fact = 4, fun = sum)
-  forest_unmanaged <- aggregate(brick(iam_file, 
+  forest_unmanaged <- aggregate(brick(iam_path, 
                                       varname="LC_area_share", lvar = 3, nl=19, level=4) * cell_areas, 
                                 fact = 4, fun = sum)
-  forest_managed <- aggregate(brick(iam_file, 
+  forest_managed <- aggregate(brick(iam_path, 
                                     varname="LC_area_share", lvar = 3, nl=19, level=5) * cell_areas, 
                               fact = 4, fun = sum)
-  restored <- aggregate(brick(iam_file, 
+  restored <- aggregate(brick(iam_path, 
                               varname="LC_area_share", lvar = 3, nl=19, level=6) * cell_areas, 
                         fact = 4, fun = sum)
-  other <- aggregate(brick(iam_file, 
+  other <- aggregate(brick(iam_path, 
                            varname="LC_area_share", lvar = 3, nl=19, level=7) * cell_areas, 
                      fact = 4, fun = sum)
-  built_up <- aggregate(brick(iam_file, 
+  built_up <- aggregate(brick(iam_path, 
                               varname="LC_area_share", lvar = 3, nl=19, level=8) * cell_areas, 
                         fact = 4, fun = sum)
-  abn_cropland_other <- aggregate(brick(iam_file, 
+  abn_cropland_other <- aggregate(brick(iam_path, 
                                         varname="LC_area_share", lvar = 3, nl=19, level=9) * cell_areas, 
                                   fact = 4, fun = sum)
-  abn_cropland_2Gbioen <- aggregate(brick(iam_file, 
+  abn_cropland_2Gbioen <- aggregate(brick(iam_path, 
                                           varname="LC_area_share", lvar = 3, nl=19, level=10) * cell_areas, 
                                     fact = 4, fun = sum)
-  abn_grassland <- aggregate(brick(iam_file, 
+  abn_grassland <- aggregate(brick(iam_path, 
                                    varname="LC_area_share", lvar = 3, nl=19, level=11) * cell_areas, 
                              fact = 4, fun = sum)
-  abn_forest_managed <- aggregate(brick(iam_file, 
+  abn_forest_managed <- aggregate(brick(iam_path, 
                                         varname="LC_area_share", lvar = 3, nl=19, level=12) * cell_areas, 
                                   fact = 4, fun = sum)
   
@@ -109,5 +109,5 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
     par(mfrow=c(1,1))
     dev.off()
   }
-return()
+return(subset(effective_natural_area, 1)) # Just return the raster for 2010
 }

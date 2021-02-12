@@ -23,6 +23,9 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
   # Read in cell areas
   cell_areas <- raster(iam_path, varname = "pixel_area")
   
+  # turn warnings off
+  options(warn=-1)
+  
   # Multiply cell land-use fractions by cell area before summing into 2-degree grids
   # Note that, by default, aggregate has na.rm=TRUE, which is what I want as land-free cells are NA
   crop_other <- aggregate(brick(iam_path, 
@@ -84,7 +87,10 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
     abn_cropland_2Gbioen * bii[10] +
     abn_grassland * bii[11] +
     abn_forest_managed * bii[12]
- 
+  
+  # turn warnings back on
+  options(warn=0)
+  
   # Write to file, including the choice of BII values in the file name
   if (require(ncdf4)) {	
     rnc <- writeRaster(effective_natural_area, filename=ena_path, format="CDF", overwrite=TRUE) 

@@ -27,7 +27,7 @@ source("convert_iam_data.R")
 
 ```
 
-The code loops through the four IAMs, processing each file within their respective folders (seven or eight per IAM). For each, it writes a new raster stack and (optionally) a pdf report. It also maps the signed difference between IAM and LUH2 for the year 2010 and plots the cell-wise correlation.
+The code loops through the four IAMs, processing each file within their respective folders (seven or eight per IAM). For each, it writes a new raster stack and (optionally) a pdf report. For the first data set within each folder, it also maps the signed difference between IAM and LUH2 for the year 2010 and plots the cell-wise correlation. (There is no need to do this for all the files in the folder, as the others have identical data for 2010, differing only after 2020.)
 
 AIM and IMAGE provide effective natural area estimates that agree much more closely with LUH2 than do GLOBIOM and MAgPIE.
 

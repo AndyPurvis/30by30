@@ -2,11 +2,11 @@
 # Andy Purvis
 # 2021-02-11
 
-convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
+convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, ye=2100, ys=5){
   
   biplot <- function(brick, LU){
     plot(brick, 1, ylim=c(-90,90), axes=FALSE, main = paste(LU, "in 2010"), sub = iam_path)
-    plot(seq(2010,2100,5), as.numeric(cellStats(brick, sum)), ylab = "Total area (Mha)", xlab="Year", main=LU, sub=which_bii)
+    plot(seq(yb,ye,ys), as.numeric(cellStats(brick, sum)), ylab = "Total area (Mha)", xlab="Year", main=LU, sub=which_bii)
   }
   
   require(raster)
@@ -20,6 +20,9 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
   
   stopifnot(which_bii %in% c("BII_crop0", "BII_humdom0")) #These are the only permitted options
   
+  # How many layers?
+  nl <- nlayers(brick(iam_path, varname = "LC_area_share"))
+  
   # Read in cell areas
   cell_areas <- raster(iam_path, varname = "pixel_area")
   
@@ -29,40 +32,40 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path){
   # Multiply cell land-use fractions by cell area before summing into 2-degree grids
   # Note that, by default, aggregate has na.rm=TRUE, which is what I want as land-free cells are NA
   crop_other <- aggregate(brick(iam_path, 
-                                varname="LC_area_share", lvar = 3, nl=19, level=1) * cell_areas, 
+                                varname="LC_area_share", lvar = 3, nl=nl, level=1) * cell_areas, 
                           fact = 4, fun = sum)
   crop_2Gbioen <- aggregate(brick(iam_path, 
-                                  varname="LC_area_share", lvar = 3, nl=19, level=2) * cell_areas, 
+                                  varname="LC_area_share", lvar = 3, nl=nl, level=2) * cell_areas, 
                             fact = 4, fun = sum)
   grassland <- aggregate(brick(iam_path, 
-                               varname="LC_area_share", lvar = 3, nl=19, level=3) * cell_areas, 
+                               varname="LC_area_share", lvar = 3, nl=nl, level=3) * cell_areas, 
                          fact = 4, fun = sum)
   forest_unmanaged <- aggregate(brick(iam_path, 
-                                      varname="LC_area_share", lvar = 3, nl=19, level=4) * cell_areas, 
+                                      varname="LC_area_share", lvar = 3, nl=nl, level=4) * cell_areas, 
                                 fact = 4, fun = sum)
   forest_managed <- aggregate(brick(iam_path, 
-                                    varname="LC_area_share", lvar = 3, nl=19, level=5) * cell_areas, 
+                                    varname="LC_area_share", lvar = 3, nl=nl, level=5) * cell_areas, 
                               fact = 4, fun = sum)
   restored <- aggregate(brick(iam_path, 
-                              varname="LC_area_share", lvar = 3, nl=19, level=6) * cell_areas, 
+                              varname="LC_area_share", lvar = 3, nl=nl, level=6) * cell_areas, 
                         fact = 4, fun = sum)
   other <- aggregate(brick(iam_path, 
-                           varname="LC_area_share", lvar = 3, nl=19, level=7) * cell_areas, 
+                           varname="LC_area_share", lvar = 3, nl=nl, level=7) * cell_areas, 
                      fact = 4, fun = sum)
   built_up <- aggregate(brick(iam_path, 
-                              varname="LC_area_share", lvar = 3, nl=19, level=8) * cell_areas, 
+                              varname="LC_area_share", lvar = 3, nl=nl, level=8) * cell_areas, 
                         fact = 4, fun = sum)
   abn_cropland_other <- aggregate(brick(iam_path, 
-                                        varname="LC_area_share", lvar = 3, nl=19, level=9) * cell_areas, 
+                                        varname="LC_area_share", lvar = 3, nl=nl, level=9) * cell_areas, 
                                   fact = 4, fun = sum)
   abn_cropland_2Gbioen <- aggregate(brick(iam_path, 
-                                          varname="LC_area_share", lvar = 3, nl=19, level=10) * cell_areas, 
+                                          varname="LC_area_share", lvar = 3, nl=nl, level=10) * cell_areas, 
                                     fact = 4, fun = sum)
   abn_grassland <- aggregate(brick(iam_path, 
-                                   varname="LC_area_share", lvar = 3, nl=19, level=11) * cell_areas, 
+                                   varname="LC_area_share", lvar = 3, nl=nl, level=11) * cell_areas, 
                              fact = 4, fun = sum)
   abn_forest_managed <- aggregate(brick(iam_path, 
-                                        varname="LC_area_share", lvar = 3, nl=19, level=12) * cell_areas, 
+                                        varname="LC_area_share", lvar = 3, nl=nl, level=12) * cell_areas, 
                                   fact = 4, fun = sum)
   
   # Read in file of BII values

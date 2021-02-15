@@ -65,8 +65,49 @@ ena_file <- "output/ena/ENA-IMAGE-1970-2000.nc"
 pdf_file <- "reports/Converting IAMs to ENA/ENA-IMAGE-1970-2000.pdf"
 ena_image_1970 <- convert_iam_data(iam_file, which_bii, ena_file, pdf_file, yb=1970, ye=2000, ys=10)
 plot(ena_image_1970)
+map(add=TRUE)
 
+```
+## Compare with LUH2 data
+
+```{r, compare-with-LUH2, echo=FALSE, cache=TRUE}
+luh2_1970 <- raster("output/ENA_LUH2_1970.nc")
+plot(luh2_1970 - ena_image_1970, main = "1970: LUH2 - IMAGE")
+map(add=TRUE)
+plot(luh2_1970, ena_image_1970, ylab="IMAGE 1970", xlab="LUH2 1970")
+abline(a=,b=1, col="red")
+l70 <- getValues(luh2_1970)
+i70 <- getValues(ena_image_1970)
+li <- !is.na(l70*i70)
+text(0, 4.5, paste("r =", round(cor(l70[li], i70[li]), 3)), adj=0)
+```
+## Read range size rarity raster in from IUCN and sum within 2$^\circ$ grid cells
+Range-size rarity is on a grid with cells that are 5km square at the equator, so are not strictly nested within the 2$^\circ$ grid cells of the land-use data. The data are therefore resampled (actually done on log-transformed data because range-size rarity is extremely skewed) into a $\frac{1}{22}$$^\circ$ grid. Then aggregate is used to sum the 44 x 44 antilogged values within each 2$^\circ$ grid cell. This range-size rarity layer is taken as a proxy for the relative numbers of endemic species within each grid cell in the present day.
+
+```{r, range-size-rarity, echo=FALSE, cache=TRUE}
+log_rsr <- log(raster("data/RSR_all.tif"))
+extract(log_rsr, cbind(0,0))
+id_log_rsr = which.max(log_rsr)
+print(xyFromCell(log_rsr,id_log_rsr))
+cell_area_raster <- raster("data/cell-area.tif")
+nested_raster <- disaggregate(cell_area_raster, fact=44)
+nested_rsr <- exp(raster::resample(log_rsr, nested_raster))
+extract(nested_rsr, cbind(0,0))
+id_nested_rsr = which.max(nested_rsr)
+print(xyFromCell(nested_rsr,id_nested_rsr))
+rsr <- aggregate(nested_rsr, fact=44, fun=sum)
+extract(rsr, cbind(0,0))
+id_rsr = which.max(rsr)
+print(xyFromCell(rsr,id_rsr))
+plot(rsr)
+plot(log(rsr), main="Range-size rarity summed within 2-degree grid cells")
+rsr_rescaled <- rsr/cellStats(rsr, mean) #Converts to a mean of 1
+rsr_array <- as.array(rsr_rescaled) #Convert to array as S_t is an array
 ```
 
 
+## Read in and rescale whole of LUH2 raster stack
+```{r, rescale-LUH2, echo=FALSE, cache=TRUE}
 
+luh2 <- stack("output/ENA_LUH2.nc")
+```

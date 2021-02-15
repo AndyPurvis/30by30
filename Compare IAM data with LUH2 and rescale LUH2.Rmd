@@ -59,6 +59,8 @@ luh2_area <- luh2_fraction * cell_areas
 
 plot(luh2_area, y=233, main="LUH2 effective natural area in 2010") # 2010
 map(add=TRUE)
+
+
 ```
 
 ## Compare with IAM data for 2010
@@ -150,6 +152,19 @@ if (require(ncdf4)) {
 
 if (require(ncdf4)) {	
      rnc <- writeRaster(iam_crop0_2010, filename=file.path("output", "ENA_crop0.nc"), format="CDF", overwrite=TRUE) 
+}
+
+if (require(ncdf4)) {	
+     rnc <- writeRaster(subset(luh2_area,231), filename=file.path("output", "ENA_LUH2_2000.nc"), format="CDF", overwrite=TRUE) 
+}
+if (require(ncdf4)) {	
+     rnc <- writeRaster(subset(luh2_area,229), filename=file.path("output", "ENA_LUH2_1990.nc"), format="CDF", overwrite=TRUE) 
+}
+if (require(ncdf4)) {	
+     rnc <- writeRaster(subset(luh2_area,227), filename=file.path("output", "ENA_LUH2_1980.nc"), format="CDF", overwrite=TRUE) 
+}
+if (require(ncdf4)) {	
+     rnc <- writeRaster(subset(luh2_area,225), filename=file.path("output", "ENA_LUH2_1970.nc"), format="CDF", overwrite=TRUE) 
 }
 
 ```

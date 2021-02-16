@@ -3,17 +3,17 @@ title: "Using the IMAGE historical data"
 author: "Andy Purvis"
 date: "14/02/2021"
 output:
-  pdf_document:
-    df_print: kable
-    toc: true
-    toc_depth: 2
-    number_sections: true
   html_document: 
     df_print: paged
     code_folding: hide
     toc: true
     toc_depth: 2
     toc_float: true
+    number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
     number_sections: true
 ---
 
@@ -75,7 +75,7 @@ luh2_1970 <- raster("output/ENA_LUH2_1970.nc")
 plot(luh2_1970 - ena_image_1970, main = "1970: LUH2 - IMAGE")
 map(add=TRUE)
 plot(luh2_1970, ena_image_1970, ylab="IMAGE 1970", xlab="LUH2 1970")
-abline(a=,b=1, col="red")
+abline(a=0,b=1, col="red")
 l70 <- getValues(luh2_1970)
 i70 <- getValues(ena_image_1970)
 li <- !is.na(l70*i70)
@@ -91,11 +91,11 @@ id_log_rsr = which.max(log_rsr)
 print(xyFromCell(log_rsr,id_log_rsr))
 cell_area_raster <- raster("data/cell-area.tif")
 nested_raster <- disaggregate(cell_area_raster, fact=44)
-nested_rsr <- exp(raster::resample(log_rsr, nested_raster))
-extract(nested_rsr, cbind(0,0))
-id_nested_rsr = which.max(nested_rsr)
-print(xyFromCell(nested_rsr,id_nested_rsr))
-rsr <- aggregate(nested_rsr, fact=44, fun=sum)
+nested_log_rsr <- raster::resample(log_rsr, nested_raster)
+extract(nested_log_rsr, cbind(0,0))
+id_nested_log_rsr = which.max(nested_log_rsr)
+print(xyFromCell(nested_rsr,id_nested_log_rsr))
+rsr <- aggregate(nested_log_rsr, fact=44)
 extract(rsr, cbind(0,0))
 id_rsr = which.max(rsr)
 print(xyFromCell(rsr,id_rsr))

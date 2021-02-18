@@ -307,6 +307,8 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
             dim(rsr_2015)[1:2]==c(nrow(natarea), ncol(natarea)))
   if (length(dim(rsr_2015))==2) dim(rsr_2015)<-c(dim(rsr_2015),1) # Varies depending on where it comes from
   
+  year_0 <- years[1]
+  
   S.0 <- array(data = c_array[,] * natarea[,,1] ^ z, dim=c(nrow(natarea), ncol(natarea))) #SAR
   print(mean(S.0, na.rm=TRUE)) #Just a useful check that nothing's gone wrong
   
@@ -364,10 +366,10 @@ percentage_plot <- function(A, S, A0=NULL, S0=NULL, year, main_stem){
 }
 
 
-extinctions_map <- function(S, year, main_stem){
-  # Simple map of extinctions between 2020 and 2050
-  diff <- S[,,which(year==2020)] - S[,,which(year==2050)]
-  image(t(diff), ylim=c(1,0), main=paste(main_stem, "extinctions between 2020 and 2050"))
+extinctions_map <- function(S, year, between=c(2020,2050), main_stem){
+  # Simple map of extinctions between the years between[1] and between[2]
+  diff <- S[,,which(year==between[1])] - S[,,which(year==between[2])]
+  image(t(diff), ylim=c(1,0), main=paste(main_stem, "extinctions between", between[1], "and", between[2]))
 }
 
 

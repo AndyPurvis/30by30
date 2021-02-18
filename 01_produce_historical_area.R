@@ -18,6 +18,9 @@ luh2_years <- seq(850, 1970, by=5)
 # Preparing to meld the land-use time series
 meld_year <- 1970 # Ascertained in previous analyses
 v_target <- subset(stack("output/ena/ENA-IMAGE-1970-2000.nc"), 1)
+print(paste("Summed fraction before mask applied:", cellStats(subset(luh2_fraction, 225), stat='sum')))
+luh2_fraction <- mask(luh2_fraction, v_target)  #M ask out those cells that are NA in the IAM data
+print(paste("Summed fraction after mask applied:", cellStats(subset(luh2_fraction, 225), stat='sum')))
 luh2_target <- subset(luh2_fraction, 225) * cell_areas
 luh2_area <- luh2_fraction * cell_areas
 luh2_0 <- subset(luh2_area, 1)

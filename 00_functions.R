@@ -310,7 +310,7 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
   year_0 <- years[1]
   
   S.0 <- array(data = c_array[,] * natarea[,,1] ^ z, dim=c(nrow(natarea), ncol(natarea))) #SAR
-  print(mean(S.0, na.rm=TRUE)) #Just a useful check that nothing's gone wrong
+  # print(mean(S.0, na.rm=TRUE)) #Just a useful check that nothing's gone wrong
   
   S_t <- array(NA, dim=c(nrow(natarea), ncol(natarea), length(wanted))) #To hold species numbers remaining at time t
   for (i in 1:nrow(natarea)){
@@ -337,6 +337,9 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
         S_t_rescaled[i,j,] <- S_t[i, j,]*rsr_2015[i,j,1]
       }
     }
+    c_array <- S_t_rescaled[,,1]/natarea[,,1]^z #Calculate c_array
+    image(t(c_array), main="c_array")
+    
   }else{
     # c was provided so no need to rescale
     S_t_rescaled <- S_t
@@ -348,7 +351,7 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
   attr(S_t_rescaled, which = "k") <- k
   attr(S_t_rescaled, which = "z") <- z
   
-  return(S_t_rescaled)
+  return(list("S_t" = S_t_rescaled, "c_array" = c_array))
 }
 
 percentage_plot <- function(A, S, A0=NULL, S0=NULL, year, main_stem){

@@ -291,7 +291,7 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
   ## natarea = array of natural area each year
   ## years = years (consecutive) for which natural area is provided
   ## wanted = years for which S_t must be estimated
-  ## c_array = array holding estimates of c for each grid cell; defaul is all 1
+  ## c_array = array holding estimates of c for each grid cell; default is all 1
   ## z = exponent of species-area relationship
   ## k = rate constant of relaxation process
   ## rsr_2015 = array of range-size rarity in 2015
@@ -315,7 +315,7 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
   S_t <- array(NA, dim=c(nrow(natarea), ncol(natarea), length(wanted))) #To hold species numbers remaining at time t
   for (i in 1:nrow(natarea)){
     for (j in 1:ncol(natarea)){
-       if (is.na(sum(natarea[i, j, ]))){
+       if (is.na(sum(natarea[i, j, ])) | is.na(c_array[i,j])){
         S_t[i, j, ] <- NA
       }else{
         S_t[i, j, 1] <- min(S.0[i,j],
@@ -329,12 +329,19 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
     }
   }
   
+  image(t(S_t[,,1166]), main="Richness in 2015, before rescaling")
+  
   if (all(c_array==1) & !any(is.na(c_array==1))){
     # Didn't know c so need to now rescale
+    y2015 <- which(years==2015)
     S_t_rescaled <- array(NA, dim=dim(S_t))
+    image(t(rsr_2015[,,1]), main="Range-size rarity in 2015")
+    
     for (i in 1:nrow(S_t)){
       for (j in 1:ncol(S_t)){
-        S_t_rescaled[i,j,] <- S_t[i, j,]*rsr_2015[i,j,1]
+        mult <- rsr_2015[i,j,1]/S_t[i, j, y2015]
+        mult[mult>50] <- 50 # Assert that nowhere's lost > 98% of its endemics, to avoid absurd extrapolations that can in areas with old land conversion
+        S_t_rescaled[i,j,] <- S_t[i, j,]*mult
       }
     }
     c_array <- S_t_rescaled[,,1]/natarea[,,1]^z #Calculate c_array

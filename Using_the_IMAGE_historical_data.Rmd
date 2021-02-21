@@ -163,9 +163,13 @@ The dynamic species-area relationship models how extinctions accumulate after th
 
 
 ```{r, relax_to_2020, echo=FALSE, warning=FALSE, cache=TRUE}
+print(paste(Sys.time(), "Analysing relaxation from 850 to 2020..."))
 this.k <- 0.0122
 this.z <- 0.269
-S_t_hist <- relax(natarea=historic_annual_area, years=c(850:2020), wanted=c(850:2020), rsr_2015=rsr_array, k=this.k, z=this.z)
+relaxation_history <- relax(natarea=historic_annual_area, years=c(850:2020), 
+                            wanted=c(850:2020), rsr_2015=rsr_array, k=this.k, z=this.z)
+S_t_hist <- relaxation_history$S_t
+c_hist <- relaxation_history$c_array
 endemics_hist <- apply(S_t_hist, MARGIN=3, sum, na.rm=TRUE)
 haa <- apply(historic_annual_area, MARGIN=3, sum, na.rm=TRUE)
 # Plot, map and totals
@@ -175,6 +179,7 @@ extinctions_map(S=S_t_hist, year=c(850:2020), between=c(850,2020), main_stem="Hi
 history_totals <- get_totals(S = endemics_hist, year = c(850:2020))
 cat("850-2020: extinction summary\n")
 print(history_totals)
+print(Sys.time())
 ```
 ## Loop through IMAGE scenarios
 For each IMAGE scenario, the effective natural area (ENA) layers from 2010 to 2100 in 5-year steps are first converted to an array of annual (interpolated) ENA. This annual ENA array is then used to drive relaxation. The first ten years should be identical to the last ten years of the relaxation over the historical period (as a sense-check), with the scenarios beginning to diverge only after 2020.
@@ -191,9 +196,10 @@ image_files <- c("ENA-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc",
                  "ENA-IMAGE-RCPref_SSP2_WAC-06Feb2020_FinalMask.nc")
 scenarios <- c("BID", "CRJ", "GDN", "HPR", "NRS", "THC", "WAC")
 shortnames <- gsub("ENA-IMAGE-RCPref_SSP2_", "aslu", image_files)
+pre2010 <- historic_annual_area[,,c(1:1160)] # 850 to 2009
 
 for (i in 1:length(image_files)){
-  
+  print(paste(Sys.time(), "Processing", image_files[i], "..."))
   slu <- stack(file.path("output/ena", image_files[i]))
   names(slu) <- seq(2010, 2100, by = 5)
   aslu <- interpolateTemporal(slu, xin=seq(2010, 2100, by=5), xout=seq(2010, 2100, by=1), 
@@ -204,18 +210,22 @@ for (i in 1:length(image_files)){
   }
 
   # convert aslu to an array and save it
-  aslu_array <- as.array(aslu)
+  aslu_array <- abind(pre2010, as.array(aslu))
   saveRDS(aslu_array, file.path("output/arrays/", paste(image_files[i], ".Rds", sep="")))
+  area_aslu  <- apply(aslu_array, MARGIN=3, sum, na.rm=TRUE)
+  plot(c(850:2100), area_aslu)
+  abline(v=2020, col="red", lty=2)
 
   # relax using aslu array
-  S_t_scen <- relax(natarea=aslu_array, years=c(2010:2100), wanted=c(2010:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+  relaxation_scenario <- relax(natarea=aslu_array, years=c(850:2100), wanted=c(2010:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
+  S_t_scen <- relaxation_scenario$S_t
   saveRDS(S_t_scen, file.path("output/arrays/", paste(shortnames[i], ".Rds", sep="")))
 
   # Calculate numbers of endemic species and area, do percentage plots, and save time series
   endemics_scen <- apply(S_t_scen, MARGIN=3, sum, na.rm=TRUE)
   saveRDS(endemics_scen, file.path("output/endemics", paste(shortnames[i], ".Rds", sep="")))
 
-  percentage_plot(A=aslu_array, S=S_t_scen, year=c(2010:2100), main_stem=shortnames[i])
+  percentage_plot(A=aslu_array[,,c(1161:1251)], S=S_t_scen, year=c(2010:2100), main_stem=shortnames[i])
   abline(v=2020, col="red", lty=2)
   extinctions_map(S=S_t_scen, year=c(2010:2100), between=c(2010, 2100), main_stem=shortnames[i])
   scen_totals <- get_totals(S = endemics_scen, year = c(2010:2100))

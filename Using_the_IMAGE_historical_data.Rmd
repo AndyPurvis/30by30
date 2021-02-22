@@ -163,7 +163,7 @@ The dynamic species-area relationship models how extinctions accumulate after th
 
 
 ```{r, relax_to_2020, echo=FALSE, warning=FALSE, cache=TRUE}
-print(paste(Sys.time(), "Analysing relaxation from 850 to 2020..."))
+print(paste(Sys.time(), "Analysing relaxation from 850 to 2020 ..."))
 this.k <- 0.0122
 this.z <- 0.269
 relaxation_history <- relax(natarea=historic_annual_area, years=c(850:2020), 
@@ -175,7 +175,7 @@ haa <- apply(historic_annual_area, MARGIN=3, sum, na.rm=TRUE)
 # Plot, map and totals
 percentage_plot(A=historic_annual_area, S=S_t_hist, year=c(850:2020), main_stem="Historical")
 abline(v=1970, col="red", lty=2)
-extinctions_map(S=S_t_hist, year=c(850:2020), between=c(850,2020), main_stem="Historical")
+extinctions_map(S=S_t_hist, year=c(850:2020), between=c(1850,2020), main_stem="Historical")
 history_totals <- get_totals(S = endemics_hist, year = c(850:2020))
 cat("850-2020: extinction summary\n")
 print(history_totals)
@@ -213,8 +213,6 @@ for (i in 1:length(image_files)){
   aslu_array <- abind(pre2010, as.array(aslu))
   saveRDS(aslu_array, file.path("output/arrays/", paste(image_files[i], ".Rds", sep="")))
   area_aslu  <- apply(aslu_array, MARGIN=3, sum, na.rm=TRUE)
-  plot(c(850:2100), area_aslu)
-  abline(v=2020, col="red", lty=2)
 
   # relax using aslu array
   relaxation_scenario <- relax(natarea=aslu_array, years=c(850:2100), wanted=c(2010:2100), rsr_2015=rsr_array, k=this.k, z=this.z)
@@ -225,11 +223,10 @@ for (i in 1:length(image_files)){
   endemics_scen <- apply(S_t_scen, MARGIN=3, sum, na.rm=TRUE)
   saveRDS(endemics_scen, file.path("output/endemics", paste(shortnames[i], ".Rds", sep="")))
 
-  percentage_plot(A=aslu_array[,,c(1161:1251)], S=S_t_scen, year=c(2010:2100), main_stem=shortnames[i])
-  abline(v=2020, col="red", lty=2)
-  extinctions_map(S=S_t_scen, year=c(2010:2100), between=c(2010, 2100), main_stem=shortnames[i])
-  scen_totals <- get_totals(S = endemics_scen, year = c(2010:2100))
-  cat(paste(shortnames[i], "2010-2100: extinction summary\n"))
+  percentage_plot(A=aslu_array[,,c(1171:1251)], S=S_t_scen[,,c(11:91)], year=c(2020:2100), main_stem=shortnames[i])
+  extinctions_map(S=S_t_scen, year=c(2010:2100), between=c(2020, 2100), main_stem=shortnames[i])
+  scen_totals <- get_totals(S = endemics_scen, year = c(2020:2100))
+  cat(paste(shortnames[i], "2020-2100: extinction summary\n"))
   print(scen_totals)
 }
 

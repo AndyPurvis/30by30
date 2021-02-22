@@ -307,10 +307,16 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
             dim(rsr_2015)[1:2]==c(nrow(natarea), ncol(natarea)))
   if (length(dim(rsr_2015))==2) dim(rsr_2015)<-c(dim(rsr_2015),1) # Varies depending on where it comes from
   
+#  image(natarea[,,1], main="First year of natural area data")
+#  print(paste("Dimensions of natural area array:", dim(natarea)))
+  
   year_0 <- years[1]
+  y2015 <- which(wanted==2015)
   
   S.0 <- array(data = c_array[,] * natarea[,,1] ^ z, dim=c(nrow(natarea), ncol(natarea))) #SAR
   # print(mean(S.0, na.rm=TRUE)) #Just a useful check that nothing's gone wrong
+#  image(S.0, main="First guess at S0 from c=kAz assuming k=1")
+#  print(paste("Dimensions of S.0 array:", dim(S.0)))
   
   S_t <- array(NA, dim=c(nrow(natarea), ncol(natarea), length(wanted))) #To hold species numbers remaining at time t
   for (i in 1:nrow(natarea)){
@@ -329,13 +335,19 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
     }
   }
   
-  image(t(S_t[,,1166]), main="Richness in 2015, before rescaling")
+# if (length(y2015)==1){
+#   image(S_t[,,y2015], main="Richness in 2015, before rescaling")
+#  }
+#  print(paste("Dimensions of S_t array:", dim(S_t)))
+  
   
   if (all(c_array==1) & !any(is.na(c_array==1))){
     # Didn't know c so need to now rescale
-    y2015 <- which(years==2015)
+#    print("Needing to rescale...")
+
     S_t_rescaled <- array(NA, dim=dim(S_t))
-    image(t(rsr_2015[,,1]), main="Range-size rarity in 2015")
+#    image(rsr_2015[,,1], main="Range-size rarity in 2015")
+#    print(paste("Dimensions of range-size rarity:", dim(rsr_2015)))
     
     for (i in 1:nrow(S_t)){
       for (j in 1:ncol(S_t)){
@@ -344,11 +356,16 @@ relax <- function(natarea, years, wanted, c_array=array(1, dim=c(nrow(natarea), 
         S_t_rescaled[i,j,] <- S_t[i, j,]*mult
       }
     }
+    
+#    print(paste("Dimentions of S_t_rescaled:", dim(S_t_rescaled)))
+    
     c_array <- S_t_rescaled[,,1]/natarea[,,1]^z #Calculate c_array
-    image(t(c_array), main="c_array")
+#    image(c_array, main="c_array")
+#    print(paste("Dimentions of c_array:", dim(c_array)))
     
   }else{
     # c was provided so no need to rescale
+    print("No need to rescale...")
     S_t_rescaled <- S_t
   }
   # Set attributes to help with traceability

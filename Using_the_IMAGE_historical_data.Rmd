@@ -23,6 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Using the IMAGE historical data
 
+THIS RUN IS A SENSITIVITY ANALYSIS USING SQRT(RSR)
 David LeClere has shared with me a 30-by-30-compatible historical land-use netCDF going back to 1970. This is appealing for two main reasons. First, IMAGE provides a better match to the LUH2 data in 2010 than do the other IAMs (MAgPIE, AIM and GLOBIOM). Second, 1970 is a full half-life before the present, de-emphasizing artifacts caused by having to harmonize incongruent land-use trajectories.
 
 This code has the following objectives:
@@ -64,6 +65,7 @@ Difficulties harmonizing the data on effective natural area matter more in regio
 
 ```{r, range-size-rarity, echo=FALSE, cache=TRUE}
 rsr <- raster("output/rsr2.nc") # Generated as part of De Palma et al. (in prep.), as the sum of the 44 grid cells per 2-degree cell
+
 rsr_rescaled <- rsr/cellStats(rsr, "mean")
 plot(rsr_rescaled, main="Relative range-size rarity per 2-degree grid cell in 2015")
 map(add=TRUE)
@@ -235,7 +237,7 @@ for (i in 1:length(image_files)){
 
 ## Put results from scenarios into a data frame and plot them
 
-The results are most naturally expressed as cumulative numbers of extinctions over time, on a relative scale. The GDN scenario is projected to prevent more extinctions than any other, with HPR (surprisingly?) second and NRS (unsurprisingly) last. GDN prevents just over 30% of the extinction projected under the baseline scenario (NRS).
+The results are most naturally expressed as cumulative numbers of extinctions over time, on a relative scale. The two scenarios that prevent most extinctions are GDN and (surprisingly?) HPR, with NRS (unsurprisingly) last. The best two prevent over 15% of the extinction projected under the baseline scenario (NRS). The main reason these differences are not greater is that the scenarios do not include restoration, which can avoid repayment of current extinction debt. 
 
 ```{r, harvest-results, echo=FALSE, warning=FALSE, cache=TRUE}
 image_projections <- data.frame(year = c(2010:2100))
@@ -264,8 +266,8 @@ text(2020, 85, adj=0, "THC", col="darkblue")
 text(2020, 80, adj=0, "CRJ", col="orange")
 text(2020, 75, adj=0, "WAC", col="violet")
 text(2020, 70, adj=0, "BID", col="red")
-text(2020, 65, adj=0, "HPR", col="green")
-text(2020, 60, adj=0, "GDN", col="yellow")
+text(2020, 65, adj=0, "GDN", col="yellow")
+text(2020, 60, adj=0, "HPR", col="green")
 
 lines(CRJ ~ year, data=image_projections, col="orange", type="l")
 lines(GDN ~ year, data=image_projections, col="yellow", type="l")

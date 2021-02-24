@@ -1,0 +1,87 @@
+---
+title: "Compare future ENA and S_t among IMAGE scenarios"
+author: "Andy Purvis"
+date: "24/02/2021"
+output:
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Comparing effective natural area and extinctions projected for the future among the IMAGE scenarios
+
+The results of the relaxation analyses for the IMAGE scenarios include some big surprises. I am therefore mapping the differences among scenarios in terms of the effective natural area projected for the year 2050 and the numbers of extinctions projected for then.
+
+```{r, load, echo=FALSE, cache=FALSE}
+library(checkpoint)
+checkpoint("2021-02-16")
+
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(maps)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+source("convert_iam_data.R")
+```
+## Reading in ENA raster stacks from IMAGE scenarios
+
+In 2050, the GDN scenario sees markedly more effective natural area in many African cells than in HPR, but less elsewhere.
+
+```{r, read_alsu_stacks, echo=FALSE, cache=TRUE, out.width="100%"}
+instem <- "output/ena"
+A_BID <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"))
+A_CRJ <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_CRJ-06Feb2020_FinalMask.nc"))
+A_GDN <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_GDN-06Feb2020_FinalMask.nc"))
+A_HPR <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_HPR-06Feb2020_FinalMask.nc"))
+A_NRS <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_NRS-06Feb2020_FinalMask.nc"))
+A_THC <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_THC-06Feb2020_FinalMask.nc"))
+A_WAC <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_WAC-06Feb2020_FinalMask.nc"))
+
+y2050 <- 9
+
+par(mar = c(5, 4, 4, 2) + 0.1)
+plot(subset(A_GDN, y2050) - subset(A_HPR, y2050), main = "GDN - HPR: Effective natural area in 2050")
+
+```
+
+## Reading in extinction arrays from projections
+
+Compared with HPR, GDN sees more endemic species survive in 2050 in parts of Africa, Madagascar and some parts of the S E Asian archipelagoes; but HPR sees more endemic species survive than GDN in parts of the New World, Australia and the E Asian mainland.
+
+```{r, read_S_t_arrays, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
+instem <- "output/arrays"
+S_BID <- readRDS(file.path(instem, "asluBID-06Feb2020_FinalMask.nc.Rds"))
+S_CRJ <- readRDS(file.path(instem, "asluCRJ-06Feb2020_FinalMask.nc.Rds"))
+S_GDN <- readRDS(file.path(instem, "asluGDN-06Feb2020_FinalMask.nc.Rds"))
+S_HPR <- readRDS(file.path(instem, "asluHPR-06Feb2020_FinalMask.nc.Rds"))
+S_NRS <- readRDS(file.path(instem, "asluNRS-06Feb2020_FinalMask.nc.Rds"))
+S_THC <- readRDS(file.path(instem, "asluTHC-06Feb2020_FinalMask.nc.Rds"))
+S_WAC <- readRDS(file.path(instem, "asluWAC-06Feb2020_FinalMask.nc.Rds"))
+
+y2050 <- 41
+
+par(mar = c(4, 4, .1, .1))
+diff <- S_GDN[,,y2050] - S_HPR[,,y2050]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="GDN has more endemics in 2050 than HPR")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2050 than GDN")
+
+```

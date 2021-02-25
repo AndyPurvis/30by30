@@ -61,9 +61,9 @@ A_WAC <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_WAC-06Feb2020_FinalMask.
 y <- 5 # 2030 = 5, 2050 = 9
 
 par(mar = c(5, 4, 4, 2) + 0.1)
-plot(subset(A_GDN, y) - subset(A_HPR, y), main = "GDN - HPR: Effective natural area in 2050")
-plot(subset(A_BID, y) - subset(A_CRJ, y), main = "BID - CRJ: Effective natural area in 2050")
-plot(subset(A_CRJ, y) - subset(A_HPR, y), main = "CRJ - HPR: Effective natural area in 2050")
+plot(subset(A_GDN, y) - subset(A_HPR, y), main = "GDN - HPR: Effective natural area in 2030")
+plot(subset(A_BID, y) - subset(A_CRJ, y), main = "BID - CRJ: Effective natural area in 2030")
+plot(subset(A_CRJ, y) - subset(A_HPR, y), main = "CRJ - HPR: Effective natural area in 2030")
 
 ```
 

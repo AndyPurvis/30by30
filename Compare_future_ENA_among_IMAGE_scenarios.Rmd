@@ -3,17 +3,17 @@ title: "Compare future ENA and S_t among IMAGE scenarios"
 author: "Andy Purvis"
 date: "24/02/2021"
 output:
-  pdf_document:
-    df_print: kable
-    toc: true
-    toc_depth: 2
-    number_sections: true
   html_document: 
     df_print: paged
     code_folding: hide
     toc: true
     toc_depth: 2
     toc_float: true
+    number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
     number_sections: true
 ---
 
@@ -46,6 +46,8 @@ source("convert_iam_data.R")
 
 In 2050, the GDN scenario sees markedly more effective natural area in many African cells than in HPR, but less elsewhere.
 
+In 2050, BID has markedly higher effective natural area than CRJ in some endemic-rich regions (notably the Andean chain and East African rift system); but HPR also has higher effective natural area than CRJ in these areas. 
+
 ```{r, read_alsu_stacks, echo=FALSE, cache=TRUE, out.width="100%"}
 instem <- "output/ena"
 A_BID <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"))
@@ -60,12 +62,16 @@ y2050 <- 9
 
 par(mar = c(5, 4, 4, 2) + 0.1)
 plot(subset(A_GDN, y2050) - subset(A_HPR, y2050), main = "GDN - HPR: Effective natural area in 2050")
+plot(subset(A_BID, y2050) - subset(A_CRJ, y2050), main = "BID - CRJ: Effective natural area in 2050")
+plot(subset(A_CRJ, y2050) - subset(A_HPR, y2050), main = "CRJ - HPR: Effective natural area in 2050")
 
 ```
 
 ## Reading in extinction arrays from projections
 
 Compared with HPR, GDN sees more endemic species survive in 2050 in parts of Africa, Madagascar and some parts of the S E Asian archipelagoes; but HPR sees more endemic species survive than GDN in parts of the New World, Australia and the E Asian mainland.
+
+BID retains more endemics in the Andean chain in 2050 than does CRJ; but so does HPR.
 
 ```{r, read_S_t_arrays, echo=FALSE, cache=TRUE, fig.show="hold", out.width="50%"}
 instem <- "output/arrays"
@@ -83,5 +89,13 @@ par(mar = c(4, 4, .1, .1))
 diff <- S_GDN[,,y2050] - S_HPR[,,y2050]
 image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="GDN has more endemics in 2050 than HPR")
 image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2050 than GDN")
+
+diff <- S_BID[,,y2050] - S_CRJ[,,y2050]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="BID has more endemics in 2050 than CRJ")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2050 than BID")
+
+diff <- S_CRJ[,,y2050] - S_HPR[,,y2050]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2050 than HPR")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2050 than CRJ")
 
 ```

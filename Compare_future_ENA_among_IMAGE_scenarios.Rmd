@@ -44,9 +44,9 @@ source("convert_iam_data.R")
 ```
 ## Reading in ENA raster stacks from IMAGE scenarios
 
-In 2050, the GDN scenario sees markedly more effective natural area in many African cells than in HPR, but less elsewhere.
+In 2030, the GDN scenario sees markedly more effective natural area in many African cells than in HPR, but less elsewhere.
 
-In 2050, BID has markedly higher effective natural area than CRJ in some endemic-rich regions (notably the Andean chain and East African rift system); but HPR also has higher effective natural area than CRJ in these areas. 
+In 2030, BID has markedly higher effective natural area than CRJ in some endemic-rich regions (notably the Andean chain and East African rift system); but HPR also has higher effective natural area than CRJ in these areas. 
 
 ```{r, read_alsu_stacks, echo=FALSE, cache=TRUE, out.width="100%"}
 instem <- "output/ena"
@@ -58,12 +58,12 @@ A_NRS <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_NRS-06Feb2020_FinalMask.
 A_THC <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_THC-06Feb2020_FinalMask.nc"))
 A_WAC <- stack(file.path(instem, "ENA-IMAGE-RCPref_SSP2_WAC-06Feb2020_FinalMask.nc"))
 
-y2050 <- 9
+y <- 5 # 2030 = 5, 2050 = 9
 
 par(mar = c(5, 4, 4, 2) + 0.1)
-plot(subset(A_GDN, y2050) - subset(A_HPR, y2050), main = "GDN - HPR: Effective natural area in 2050")
-plot(subset(A_BID, y2050) - subset(A_CRJ, y2050), main = "BID - CRJ: Effective natural area in 2050")
-plot(subset(A_CRJ, y2050) - subset(A_HPR, y2050), main = "CRJ - HPR: Effective natural area in 2050")
+plot(subset(A_GDN, y) - subset(A_HPR, y), main = "GDN - HPR: Effective natural area in 2050")
+plot(subset(A_BID, y) - subset(A_CRJ, y), main = "BID - CRJ: Effective natural area in 2050")
+plot(subset(A_CRJ, y) - subset(A_HPR, y), main = "CRJ - HPR: Effective natural area in 2050")
 
 ```
 
@@ -83,19 +83,19 @@ S_NRS <- readRDS(file.path(instem, "asluNRS-06Feb2020_FinalMask.nc.Rds"))
 S_THC <- readRDS(file.path(instem, "asluTHC-06Feb2020_FinalMask.nc.Rds"))
 S_WAC <- readRDS(file.path(instem, "asluWAC-06Feb2020_FinalMask.nc.Rds"))
 
-y2050 <- 41
+y <- 21 # 41 = 2050, 21 = 2030
 
 par(mar = c(4, 4, .1, .1))
-diff <- S_GDN[,,y2050] - S_HPR[,,y2050]
-image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="GDN has more endemics in 2050 than HPR")
-image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2050 than GDN")
+diff <- S_GDN[,,y] - S_HPR[,,y]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="GDN has more endemics in 2030 than HPR")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2030 than GDN")
 
-diff <- S_BID[,,y2050] - S_CRJ[,,y2050]
-image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="BID has more endemics in 2050 than CRJ")
-image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2050 than BID")
+diff <- S_BID[,,y] - S_CRJ[,,y]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="BID has more endemics in 2030 than CRJ")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2030 than BID")
 
-diff <- S_CRJ[,,y2050] - S_HPR[,,y2050]
-image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2050 than HPR")
-image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2050 than CRJ")
+diff <- S_CRJ[,,y] - S_HPR[,,y]
+image(t(diff * (diff>0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="CRJ has more endemics in 2030 than HPR")
+image(t(-diff * (diff < 0)), ylim=c(1,0), bty="n", xaxt="n", yaxt="n", main="HPR has more endemics in 2030 than CRJ")
 
 ```

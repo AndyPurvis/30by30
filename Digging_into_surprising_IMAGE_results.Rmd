@@ -1,0 +1,100 @@
+---
+title: "Digging into surprising IMAGE results"
+author: "Andy Purvis"
+date: "25/02/2021"
+output:
+  html_document: 
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+  pdf_document:
+    df_print: kable
+    toc: true
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Digging into surprising IMAGE results
+
+The IMAGE-based scenarios have surprising and non-intuitive results. Specifically, the HPR scenario (for Harsh Political Reality) reduces extinctions of endemics by more than any other scenario, despite being conceived of as the least biodiversity-oriented of the action scenarios (NRS is a non-action counterfactual, in which protected area coverage is not extended).
+
+Given how surprising this result is, it is sensible to check nothing has gone wrong in the NHM processing of the input files; e.g., mixing up two input files could potentially drive the patterns we see. This markdown examines carefully each step in the processing, focusing on three scenarios that Anthony Waldron explained form a sort of linear progression in terms of how biodiversity-friendly they are intended to be: HPR, CRJ and BID.
+
+Steps to investigate:
+  
+  • Do the ENA files for the scenarios agree at 2020, as they should; and, if not, at what step in the processing did they become different?
+  
+  • Do the netCDFs and tifs agree for HPR? (Suggested by Anthony Waldron in email of 25th February.)
+  
+## About the scenarios
+
+Anthony Waldron characterised the three scenarios as follows:
+
+• BID = optimum 30% to minimise extinction under constraint of existing, inefficient PA system
+
+• HPR = optimum 30% under constraint that any land that will be used for agriculture by 2050 cannot be a PA
+
+• CRJ = a compromise between those two (optimum 20% for biodiversity, then avoid agricultural land for the remaining 10% to make up 30%...I believe)
+
+Hence, by design, they are expected to lie on a continuum in terms of their mitigation of extinctions.
+
+```{r, load, echo=FALSE, cache=FALSE}
+library(checkpoint)
+checkpoint("2021-02-16")
+
+start.time <- Sys.time()
+library(raster)
+library(scales)
+library(abind)
+library(gplots)
+library(colorspace)
+library(maps)
+library(ncdf4) # package for netcdf manipulation, suggested by https://rpubs.com/boyerag/297592
+library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
+library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
+source("00_functions.R")
+source("convert_iam_data.R")
+```
+
+## Comparing ENA files for the three scenarios every five years from 2010 to 2030
+
+The effective natural area stacks calculated previously are the same for BID, CRJ and HPR (beyond rounding error) in 2010, 2015 and 2020 -- as they should be -- but have begun to diverge in the 2025 data. 
+
+```{r compare-ENA, echo=FALSE, cache=TRUE}
+stem <- "output/ena"
+ENA_BID <- stack(file.path(stem, "ENA-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"))
+ENA_CRJ <- stack(file.path(stem, "ENA-IMAGE-RCPref_SSP2_CRJ-06Feb2020_FinalMask.nc"))
+ENA_HPR <- stack(file.path(stem, "ENA-IMAGE-RCPref_SSP2_HPR-06Feb2020_FinalMask.nc"))
+
+year <- seq(2010,2100,by=5)
+
+par(mfrow=c(1,2))
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  sd <- sd(getValues(subset(ENA_BID, i) - subset(ENA_CRJ, i)), na.rm=TRUE)
+  plot(subset(ENA_BID, i) - subset(ENA_CRJ, i), main = paste("BID - CRJ: ENA in", year[i]), sub = paste("Standard deviation =", round(sd, 4)))
+  sd <- sd(getValues(subset(ENA_CRJ, i) - subset(ENA_HPR, i)), na.rm=TRUE)
+  plot(subset(ENA_CRJ, i) - subset(ENA_HPR, i), main = paste("CRJ - HPR: ENA in", year[i]), sub = paste("Standard deviation =", round(sd, 4)))
+}
+
+
+
+```
+
+## Comparing netCDFs with tiffs every 5 years from 2010 to 2030
+
+Anthony Waldron has provided two sets of land-use data for each year: the netCDFs used in the analyses and the tiffs that were not in the end used because their organisation is less user-friendly. Do they contain the same data, or has some difference sneaked in somehow? 
+
+```{r compare-land-use, echo=FALSE, cache=TRUE}
+
+i <- 1
+
+```

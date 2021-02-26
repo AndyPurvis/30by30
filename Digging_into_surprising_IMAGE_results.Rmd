@@ -31,7 +31,7 @@ Steps to investigate:
   
   • Do the ENA files for the scenarios agree at 2020, as they should; and, if not, at what step in the processing did they become different?
   
-  • Do the netCDFs and tifs agree for HPR? (Suggested by Anthony Waldron in email of 25th February.)
+  • Can I trace from the input netCDFs to the ENA files, or did something get, e.g., misnamed?
   
 ## About the scenarios
 
@@ -89,12 +89,95 @@ for (i in 1:5){
 
 ```
 
-## Comparing netCDFs with tiffs every 5 years from 2010 to 2030
+## Checking the netCDF files shared with me
 
-Anthony Waldron has provided two sets of land-use data for each year: the netCDFs used in the analyses and the tiffs that were not in the end used because their organisation is less user-friendly. Do they contain the same data, or has some difference sneaked in somehow? 
+The netCDF files shared with me are in data/IAM outputs for 30 by 30 scenarios/IMAGE. There are 12 land-use classes, of which 3 are relevant:
 
-```{r compare-land-use, echo=FALSE, cache=TRUE}
+• Layer 4: forest_unmanaged
+• Layer 5: forest_managed
+• Layer 7: other
 
-i <- 1
+All three of these land-use classes show some pixels with big differences among the three scenarios, from 2025 onwards. Many of the differences are nonintuitive; but none appears to be in the Andes.
+
+```{r compare-netCDFs, echo=FALSE, cache=TRUE}
+
+bluered.plot <- function(raster1, raster2, main=""){
+  # Slightly kludgy but plots differences within the range -1 to +1, with zero being white
+  mindiff <- round(cellStats(raster1-raster2, "min"), 2)
+  maxdiff <- round(cellStats(raster1-raster2, "max"), 2)
+  if (maxdiff - mindiff < 0.01){
+    print(paste(main, year[i],": differences too small, between", mindiff, "and", maxdiff))
+  }else{
+    mycols <- bluered(200)
+    tooblue <- 100 + (mindiff * 100)
+    toored <- (1 -maxdiff) * 100
+    mycols <- mycols[1:(200-toored)]
+    mycols <- mycols[-c(1:tooblue)]
+    plot(raster1 - raster2, col=mycols, main=main, sub=paste("Difference range is", mindiff, "to", maxdiff))
+    map(add=TRUE, col="lightgrey", interior=FALSE)
+  }
+}
+
+stem <- "data/IAM outputs for 30 by 30 scenarios/IMAGE"
+
+file_BID <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"
+file_CRJ <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_CRJ-06Feb2020_FinalMask.nc"
+file_HPR <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_HPR-06Feb2020_FinalMask.nc"
+
+nc_BID <- nc_open(file.path(stem, file_BID))
+print(strsplit(nc_BID$dim$lc_class$units, "/"))
+year <- nc_BID$dim$time$vals
+print(year)
+
+# forest_unmanaged
+fu_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=4)
+fu_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=4)
+fu_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=4)
+
+fu_BIDminusCRJ <- fu_BID - fu_CRJ
+fu_CRJminusHPR <- fu_CRJ - fu_HPR
+
+par(mfrow=c(1,2))
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(fu_BID,i), subset(fu_CRJ, i), main="BID - CRJ: forest_unmanaged")
+  bluered.plot(subset(fu_CRJ,i), subset(fu_HPR, i), main="CRJ - HPR: forest_unmanaged")
+}
+
+
+# forest_managed
+fm_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=5)
+fm_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=5)
+fm_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=5)
+
+fm_BIDminusCRJ <- fm_BID - fm_CRJ
+fm_CRJminusHPR <- fm_CRJ - fm_HPR
+
+par(mfrow=c(1,2))
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(fm_BID,i), subset(fm_CRJ, i), main="BID - CRJ: forest_managed")
+  bluered.plot(subset(fm_CRJ,i), subset(fm_HPR, i), main="CRJ - HPR: forest_managed")
+}
+
+
+# other
+o_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=7)
+o_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=7)
+o_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=7)
+
+o_BIDminusCRJ <- o_BID - o_CRJ
+o_CRJminusHPR <- o_CRJ - o_HPR
+
+par(mfrow=c(1,2))
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(o_BID,i), subset(o_CRJ, i), main="BID - CRJ: other")
+  bluered.plot(subset(o_CRJ,i), subset(o_HPR, i), main="CRJ - HPR: other")
+}
+
 
 ```

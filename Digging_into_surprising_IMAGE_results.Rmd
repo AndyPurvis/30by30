@@ -181,3 +181,6 @@ for (i in 1:5){
 
 
 ```
+## Next steps
+
+I wonder whether it's possible that one of the scenarios didn't get one of the input layers incorporated into it in the first place, or multiplied by the 'wrong' cell area raster, perhaps explaining how the ENA shows a 'deficit' for the Andes despite there not being anything evident in the netCDFs. That at least seems worth looking into next.

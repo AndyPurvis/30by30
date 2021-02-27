@@ -2,7 +2,7 @@
 # Andy Purvis
 # 2021-02-11
 
-convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, ye=2100, ys=5){
+convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, ye=2100, ys=5, layers=1){
   
   biplot <- function(brick, LU){
     plot(brick, 1, ylim=c(-90,90), axes=FALSE, main = paste(LU, "in 2010"), sub = iam_path)
@@ -118,5 +118,5 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, y
     par(mfrow=c(1,1))
     dev.off()
   }
-return(subset(effective_natural_area, 1)) # Just return the raster for 2010
+return(subset(effective_natural_area, layers)) # Just return the requested rasters
 }

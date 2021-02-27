@@ -184,3 +184,32 @@ for (i in 1:5){
 ## Next steps
 
 I wonder whether it's possible that one of the scenarios didn't get one of the input layers incorporated into it in the first place, or multiplied by the 'wrong' cell area raster, perhaps explaining how the ENA shows a 'deficit' for the Andes despite there not being anything evident in the netCDFs. That at least seems worth looking into next.
+
+Looking into the BID IMAGE data, there's a huge disjunction in the managed forest beetween 2020 and 2025, with 100 Mha being lost. If that's being lost in the areas where endemic richness then fell, I have a likely explanation for what's gone on.
+
+```{r recalculate-ENA-and-compare, echo=FALSE, cache=TRUE}
+source("convert_iam_data.R")
+in_stem <- "data/IAM outputs for 30 by 30 scenarios/IMAGE"
+which_bii <- "BII_humdom0"
+ena_stem <- "output/checking"
+pdf_stem <- "reports/checking"
+BID_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"
+new_ena_BID <- convert_iam_data(file.path(in_stem, BID_file), which_bii, file.path(ena_stem, "Checking_BID_ENA.nc"), file.path(pdf_stem, "Checking_BID.pdf"), layers=c(1:19))
+
+CRJ_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_CRJ-06Feb2020_FinalMask.nc"
+new_ena_CRJ <- convert_iam_data(file.path(in_stem, CRJ_file), which_bii, file.path(ena_stem, "Checking_CRJ_ENA.nc"), file.path(pdf_stem, "Checking_CRJ.pdf"), layers=c(1:19))
+
+HPR_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_HPR-06Feb2020_FinalMask.nc"
+new_ena_HPR <- convert_iam_data(file.path(in_stem, HPR_file), which_bii, file.path(ena_stem, "Checking_HPR_ENA.nc"), file.path(pdf_stem, "Checking_HPR.pdf"), layers=c(1:19))
+
+```
+
+## Mapping the loss of managed forest between 2020 and 2025
+
+If the loss of managed forest were concentrated in, e.g., the Andes, it might be relevant; but it's not.
+
+```{r mapping_forest_managed, echo=FALSE, cache=TRUE}
+for (i in 1:4){
+  bluered.plot(subset(fm_BID, i), subset(fm_BID, (i+1)), main=paste("BID forest_managed:", year[i], "-", year[i+1]))
+}
+```

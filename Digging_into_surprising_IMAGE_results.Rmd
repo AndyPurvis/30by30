@@ -99,9 +99,11 @@ The netCDF files shared with me are in data/IAM outputs for 30 by 30 scenarios/I
 
 All three of these land-use classes show some pixels with big differences among the three scenarios, from 2025 onwards. Many of the differences are nonintuitive; but none appears to be in the Andes.
 
+Because the solution does not appear to lie within those three land-use classes, the same plots are also then used for the other 9 classes, in numerical order (but they come after the three listed above).
+
 ```{r compare-netCDFs, echo=FALSE, cache=TRUE}
 
-bluered.plot <- function(raster1, raster2, main=""){
+bluered.plot <- function(raster1, raster2, main="", ylim=c(-90,90), xlim=c(-180,180)){
   # Slightly kludgy but plots differences within the range -1 to +1, with zero being white
   mindiff <- round(cellStats(raster1-raster2, "min"), 2)
   maxdiff <- round(cellStats(raster1-raster2, "max"), 2)
@@ -113,7 +115,7 @@ bluered.plot <- function(raster1, raster2, main=""){
     toored <- (1 -maxdiff) * 100
     mycols <- mycols[1:(200-toored)]
     mycols <- mycols[-c(1:tooblue)]
-    plot(raster1 - raster2, col=mycols, main=main, sub=paste("Difference range is", mindiff, "to", maxdiff))
+    plot(raster1 - raster2, col=mycols, ylim=ylim, xlim=xlim, main=main, sub=paste("Difference range is", mindiff, "to", maxdiff))
     map(add=TRUE, col="lightgrey", interior=FALSE)
   }
 }
@@ -141,8 +143,8 @@ par(mfrow=c(1,2))
 
 for (i in 1:5){
   #Loop through first 5 layers of each stack
-  bluered.plot(subset(fu_BID,i), subset(fu_CRJ, i), main="BID - CRJ: forest_unmanaged")
-  bluered.plot(subset(fu_CRJ,i), subset(fu_HPR, i), main="CRJ - HPR: forest_unmanaged")
+  bluered.plot(subset(fu_BID,i), subset(fu_CRJ, i), main="BID - CRJ: forest_unmanaged", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(fu_CRJ,i), subset(fu_HPR, i), main="CRJ - HPR: forest_unmanaged", xlim=c(-85,-50), ylim=c(-15, 10))
 }
 
 
@@ -158,8 +160,8 @@ par(mfrow=c(1,2))
 
 for (i in 1:5){
   #Loop through first 5 layers of each stack
-  bluered.plot(subset(fm_BID,i), subset(fm_CRJ, i), main="BID - CRJ: forest_managed")
-  bluered.plot(subset(fm_CRJ,i), subset(fm_HPR, i), main="CRJ - HPR: forest_managed")
+  bluered.plot(subset(fm_BID,i), subset(fm_CRJ, i), main="BID - CRJ: forest_managed", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(fm_CRJ,i), subset(fm_HPR, i), main="CRJ - HPR: forest_managed", xlim=c(-85,-50), ylim=c(-15, 10))
 }
 
 
@@ -175,37 +177,147 @@ par(mfrow=c(1,2))
 
 for (i in 1:5){
   #Loop through first 5 layers of each stack
-  bluered.plot(subset(o_BID,i), subset(o_CRJ, i), main="BID - CRJ: other")
-  bluered.plot(subset(o_CRJ,i), subset(o_HPR, i), main="CRJ - HPR: other")
+  bluered.plot(subset(o_BID,i), subset(o_CRJ, i), main="BID - CRJ: other", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(o_CRJ,i), subset(o_HPR, i), main="CRJ - HPR: other", xlim=c(-85,-50), ylim=c(-15, 10))
 }
 
+
+# cropland_other
+co_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=1)
+co_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=1)
+co_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=1)
+
+par(mfrow=c(1,2))
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(co_BID,i), subset(co_CRJ, i), main="BID - CRJ: cropland_other", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(co_CRJ,i), subset(co_HPR, i), main="CRJ - HPR: cropland_other", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# cropland_2Gbioen
+c2_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=2)
+c2_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=2)
+c2_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=2)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(c2_BID,i), subset(c2_CRJ, i), main="BID - CRJ: cropland_2Gbioen", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(c2_CRJ,i), subset(c2_HPR, i), main="CRJ - HPR: cropland_2Gbioen", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# grassland
+g_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=3)
+g_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=3)
+g_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=3)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(g_BID,i), subset(g_CRJ, i), main="BID - CRJ: grassland", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(g_CRJ,i), subset(g_HPR, i), main="CRJ - HPR: grassland", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# restored
+r_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=6)
+r_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=6)
+r_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=6)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(r_BID,i), subset(r_CRJ, i), main="BID - CRJ: restored", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(r_CRJ,i), subset(r_HPR, i), main="CRJ - HPR: restored", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# built-up
+b_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=8)
+b_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=8)
+b_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=8)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(b_BID,i), subset(b_CRJ, i), main="BID - CRJ: built-up", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(b_CRJ,i), subset(b_HPR, i), main="CRJ - HPR: built-up", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# abn_cropland_other
+aco_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=9)
+aco_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=9)
+aco_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=9)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(aco_BID,i), subset(aco_CRJ, i), main="BID - CRJ: abn_cropland_other", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(aco_CRJ,i), subset(aco_HPR, i), main="CRJ - HPR: abn_cropland_other", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# abn_cropland_2Gbioen
+ac2_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=10)
+ac2_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=10)
+ac2_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=10)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(ac2_BID,i), subset(ac2_CRJ, i), main="BID - CRJ: abn_cropland_2Gbioen", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(ac2_CRJ,i), subset(ac2_HPR, i), main="CRJ - HPR: abn_cropland_2Gbioen", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# abn_grassland
+ag_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=11)
+ag_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=11)
+ag_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=11)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(ag_BID,i), subset(ag_CRJ, i), main="BID - CRJ: abn_grassland", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(ag_CRJ,i), subset(ag_HPR, i), main="CRJ - HPR: abn_grassland", xlim=c(-85,-50), ylim=c(-15, 10))
+}
+
+# abn_forest_managed
+afm_BID <- brick(file.path(stem, file_BID), nl=nl, varname="LC_area_share", level=12)
+afm_CRJ <- brick(file.path(stem, file_CRJ), nl=nl, varname="LC_area_share", level=12)
+afm_HPR <- brick(file.path(stem, file_HPR), nl=nl, varname="LC_area_share", level=12)
+
+for (i in 1:5){
+  #Loop through first 5 layers of each stack
+  bluered.plot(subset(afm_BID,i), subset(afm_CRJ, i), main="BID - CRJ: abn_forest_managed", xlim=c(-85,-50), ylim=c(-15, 10))
+  bluered.plot(subset(afm_CRJ,i), subset(afm_HPR, i), main="CRJ - HPR: abn_forest_managed", xlim=c(-85,-50), ylim=c(-15, 10))
+}
 
 ```
 ## Next steps
 
 I wonder whether it's possible that one of the scenarios didn't get one of the input layers incorporated into it in the first place, or multiplied by the 'wrong' cell area raster, perhaps explaining how the ENA shows a 'deficit' for the Andes despite there not being anything evident in the netCDFs. That at least seems worth looking into next.
 
-Looking into the BID IMAGE data, there's a huge disjunction in the managed forest beetween 2020 and 2025, with 100 Mha being lost. If that's being lost in the areas where endemic richness then fell, I have a likely explanation for what's gone on.
+Looking into the BID IMAGE data, there's a huge disjunction in the managed forest between 2020 and 2025, with 100 Mha being lost. If that's being lost in the areas where endemic richness then fell, I have a likely explanation for what's gone on.
+
+Looking more closely, there's a lot of managed forest that becomes abandoned managed forest, and which then gets a \emph{lower} BII value as a result. I have therefore edited convert_iam_data.R so that the BII coefficient for abandoned managed forest is at least as high as that for managed forest. However, this hasn't made any real difference (the global ENA through time is barely different, and it does not remove the big differences in 2030 ENA between CRJ and HPR).
+
+What is causing the difference in the Andes in 2030?
+
 
 ```{r recalculate-ENA-and-compare, echo=FALSE, cache=TRUE}
 source("convert_iam_data.R")
+print("Trying now with a constraint on BII in adandoned managed forest...")
 in_stem <- "data/IAM outputs for 30 by 30 scenarios/IMAGE"
 which_bii <- "BII_humdom0"
 ena_stem <- "output/checking"
 pdf_stem <- "reports/checking"
 BID_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_BID-06Feb2020_FinalMask.nc"
-new_ena_BID <- convert_iam_data(file.path(in_stem, BID_file), which_bii, file.path(ena_stem, "Checking_BID_ENA.nc"), file.path(pdf_stem, "Checking_BID.pdf"), layers=c(1:19))
+new_ena_BID <- convert_iam_data(file.path(in_stem, BID_file), which_bii, file.path(ena_stem, paste("BII", which_bii, "BID_ENA.nc", sep="_")), file.path(pdf_stem, paste("BII", which_bii, "BID_ENA.pdf", sep="_")), layers=c(1:19))
 
 CRJ_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_CRJ-06Feb2020_FinalMask.nc"
-new_ena_CRJ <- convert_iam_data(file.path(in_stem, CRJ_file), which_bii, file.path(ena_stem, "Checking_CRJ_ENA.nc"), file.path(pdf_stem, "Checking_CRJ.pdf"), layers=c(1:19))
+new_ena_CRJ <- convert_iam_data(file.path(in_stem, CRJ_file), which_bii, file.path(ena_stem, paste("BII", which_bii, "CRJ_ENA.nc", sep="_")), file.path(pdf_stem, paste("BII", which_bii, "CRJ_ENA.pdf", sep="_")), layers=c(1:19))
 
 HPR_file <- "BendingTheCurve30by30-LCproj-IMAGE-RCPref_SSP2_HPR-06Feb2020_FinalMask.nc"
-new_ena_HPR <- convert_iam_data(file.path(in_stem, HPR_file), which_bii, file.path(ena_stem, "Checking_HPR_ENA.nc"), file.path(pdf_stem, "Checking_HPR.pdf"), layers=c(1:19))
+new_ena_HPR <- convert_iam_data(file.path(in_stem, HPR_file), which_bii, file.path(ena_stem, paste("BII", which_bii, "HPR_ENA.nc", sep="_")), file.path(pdf_stem, paste("BII", which_bii, "HPR_ENA.pdf", sep="_")), layers=c(1:19))
+
+plot(subset(new_ena_CRJ,5) - subset(new_ena_HPR, 5)) # Global
+plot(subset(new_ena_CRJ,5) - subset(new_ena_HPR, 5), xlim=c(-85,-50), ylim=c(-15, 10)) # Zoom in on Andes
 
 ```
 
 ## Mapping the loss of managed forest between 2020 and 2025
-
+plot(subset(new_ena_CRJ,5) - subset(new_ena_HPR, 5))
 If the loss of managed forest were concentrated in, e.g., the Andes, it might be relevant; but it's not.
 
 ```{r mapping_forest_managed, echo=FALSE, cache=TRUE}

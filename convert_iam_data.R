@@ -18,7 +18,7 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, y
   require(rgdal) # package for geospatial analysis, suggested by https://rpubs.com/boyerag/297592
   require(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
   
-  stopifnot(which_bii %in% c("BII_crop0", "BII_humdom0")) #These are the only permitted options
+  stopifnot(which_bii %in% c("BII_crop0", "BII_humdom0", "1")) #These are the only permitted options
   
   # How many layers?
   nl <- nlayers(brick(iam_path, varname = "LC_area_share"))
@@ -71,11 +71,9 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, y
   # Read in file of BII values
   bii_coefficients <- read.csv("output/Rescaled_BII_values_for_IAM_classes.csv")
   
-  if (which_bii == "BII_humdom0"){
-    bii <- bii_coefficients$BII_humdom0
-  }else{
-    bii <- bii_coefficients$BII_crop0
-  }
+  if (which_bii == "BII_humdom0") bii <- bii_coefficients$BII_humdom0
+  if (which_bii == "BII_crop0") bii <- bii_coefficients$BII_crop0
+  if (which_bii == "1") bii <- rep(1, 12) # for testing purposes
   
   # Multiply each raster by its BII and add the products together
   effective_natural_area <- crop_other * bii[1] +
@@ -89,7 +87,7 @@ convert_iam_data <- function(iam_path, which_bii, ena_path, pdf_path, yb=2010, y
     abn_cropland_other * bii[9] +
     abn_cropland_2Gbioen * bii[10] +
     abn_grassland * bii[11] +
-    abn_forest_managed * bii[12]
+    abn_forest_managed * max(c(bii[12], bii[5])) #Abandoned managed forest can't be worse than managed forest
   
   # turn warnings back on
   options(warn=0)

@@ -47,6 +47,73 @@ source("00_functions.R")
 source("convert_iam_data.R")
 ```
 
+## Read in range-size rarity to assess how badly mismatches between AIM and LUH2 might matter
+
+Difficulties harmonizing the data on effective natural area matter more in regions with considerable range-size rarity, as these are the places where extinction debt could be artificially inflated by mismatches. The range-size rarity layer is also used in the dynamic species-area modelling, as a proxy for the geographic pattern of diversity of habitat-specialist endemics in the year 2015.
+
+```{r, range-size-rarity, echo=FALSE, cache=TRUE}
+rsr <- raster("output/rsr.nc") # Generated as part of De Palma et al. (in prep.), as the sum of the 44 grid cells per 2-degree cell
+rsr_rescaled <- rsr/cellStats(rsr, "mean")
+plot(rsr_rescaled, main="Relative range-size rarity per 2-degree grid cell in 2015")
+map(add=TRUE)
+rsr_array <- as.array(rsr_rescaled) #Convert to array as S_t is an array
+```
+## Compare AIM ENA estimates for 2010 with corresponding LUH2 data and rescale LUH2
+
+The across-cells correlation between ENA estimates from LUH2 and AIM is 0.846; weighting by range-size rarity reduces this to 0.81. The map shows that some Neotropical cells are almost entirely natural land according to LUh2 and almost entirely converted land according to AIM.
+
+```{r, compare-with-LUH2, echo=FALSE, cache=TRUE}
+ena <- stack("output/ena/ENA-AIM-RCPref_SSP2_BID-12Feb2020_FinalMask.nc")
+luh2_2010 <- raster("output/ENA_LUH2_2010.nc")
+
+plot(luh2_2010 - subset(ena, i), main = "LUH2 - AIM: 2010", years[i])
+map(add=TRUE)
+plot(luh2_2010, subset(ena, i), ylab="AIM 2010", xlab="LUH2 2010")
+abline(a=0,b=1,col="red")
+lv <- getValues(luh2_2010)
+iv <- getValues(subset(ena, i))
+li <- !is.na(lv*iv)
+text(0, 4.5, paste("r =", round(cor(lv[li], iv[li]), 3)), adj=0)
+  
+m1 <- lm(iv[li] ~ lv[li], weights=getValues(rsr_rescaled)[li])
+text(0, 4, paste("weighted r =", round(sqrt(summary(m1)$r.squared), 3)), adj=0)
+
+```
+## Produce annual LUH2 data and rescale to match IMAGE data
+
+\emph{This needs work because of hard coding into the 01_produce_historic_annual_area.R file!!!}
+
+LUH2 data cover the years 850-2015 in five-year time steps. However, to ensure that species cannot be resurrected, even this level of granularity is not sufficient; the ENA estimates are therefore used as the basis for interpolation to produce annual ENA maps (in the form of a 3-dimensional array).
+
+The source file read in to produce the historic_annual_area array has been somewhat hard-coded to accommodate the unique case of the IMAGE historical estimates; this decision was taken for speed of getting the IMAGE results, but it also has the consequence that a new version of the source file will be needed for the other IAMs, slowing down their results. Harmonization used the 1970 IMAGE data.
+
+The first plot shows the global trajectory of effective natural area over time. The second shows that there is a discontinuity in the rate of change in ENA at 1970, but it still represents a very small fraction of the overall ENA value. Nonetheless, it could provide problems when other IAMs are considered, for two reasons. First, the other IAMs fit LUH2 less well, meaning the discontinuity is likely to be larger. Second, harmonization will have to be done for the year 2010, meaning there will have been much less time for relaxation to smooth away artifacts.
+
+```{r, rescale-LUH2, echo=FALSE, cache=TRUE}
+if (file.exists("output/historic_annual_area.Rds")){
+  historic_annual_area <- readRDS("output/historic_annual_area.Rds")
+}else{
+  source("01_produce_historical_area.R")
+}
+
+# Summarise landscape change
+global_effective_area <- apply(historic_annual_area, MARGIN=3, sum, na.rm=TRUE)
+plot(global_effective_area ~ c(850:2020), ylab="Global natural habitat", xlab="Year", type="l",
+     main="Global effective area from LUH2 harmonized with IMAGE in 1970", sub="Note rise after Black Death")
+abline(v=1970, col="red", lty=2)
+
+# Check for a discontinuity in rate of change - i.e., in the sum of absolute year-to-year changes across grid cells
+turnover <- rep(NA, 2020-850)
+for (i in 1:(2020-850)){
+  diff <- abs(historic_annual_area[,,i+1] - historic_annual_area[,,i])
+  turnover[i] <- sum(diff, na.rm=TRUE)
+}
+plot(turnover ~ c(850:2019), type="l", ylab="Gross land-use change",
+     main = "Land-use change between successive years") 
+abline(v=1970, col="red", lty=2)
+
+```
+
 ## Package version info
 
 ```{r, session-info, echo=FALSE, cache=FALSE}

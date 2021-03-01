@@ -45,6 +45,8 @@ library(rgdal) # package for geospatial analysis, suggested by https://rpubs.com
 library(ggplot2) # package for plotting, suggested by https://rpubs.com/boyerag/297592
 source("00_functions.R")
 source("convert_iam_data.R")
+source("harmonize_with_luh2_2010.R")
+
 ```
 
 ## Read in range-size rarity to assess how badly mismatches between AIM and LUH2 might matter
@@ -60,18 +62,19 @@ rsr_array <- as.array(rsr_rescaled) #Convert to array as S_t is an array
 ```
 ## Compare AIM ENA estimates for 2010 with corresponding LUH2 data and rescale LUH2
 
-The across-cells correlation between ENA estimates from LUH2 and AIM is 0.846; weighting by range-size rarity reduces this to 0.81. The map shows that some Neotropical cells are almost entirely natural land according to LUh2 and almost entirely converted land according to AIM.
+The across-cells correlation between ENA estimates from LUH2 and AIM is 0.86; weighting by range-size rarity reduces this to 0.827. The map shows that some Andean cells are almost entirely natural land according to LUh2 and almost entirely converted land according to AIM.
 
 ```{r, compare-with-LUH2, echo=FALSE, cache=TRUE}
+cell_area_raster <- raster("data/cell-area.tif")
 ena <- stack("output/ena/ENA-AIM-RCPref_SSP2_BID-12Feb2020_FinalMask.nc")
 luh2_2010 <- raster("output/ENA_LUH2_2010.nc")
 
-plot(luh2_2010 - subset(ena, i), main = "LUH2 - AIM: 2010", years[i])
+plot(luh2_2010 - subset(ena, 1), main = "LUH2 - AIM: 2010")
 map(add=TRUE)
-plot(luh2_2010, subset(ena, i), ylab="AIM 2010", xlab="LUH2 2010")
+plot(luh2_2010, subset(ena, 1), ylab="AIM 2010", xlab="LUH2 2010")
 abline(a=0,b=1,col="red")
 lv <- getValues(luh2_2010)
-iv <- getValues(subset(ena, i))
+iv <- getValues(subset(ena, 1))
 li <- !is.na(lv*iv)
 text(0, 4.5, paste("r =", round(cor(lv[li], iv[li]), 3)), adj=0)
   
@@ -88,7 +91,6 @@ The source file read in to produce the historic_annual_area array has been somew
 The first plot shows the global trajectory of effective natural area over time. The second shows that there is a discontinuity in the rate of change in ENA at 1970, but it still represents a very small fraction of the overall ENA value. Nonetheless, it could provide problems when other IAMs are considered, for two reasons. First, the other IAMs fit LUH2 less well, meaning the discontinuity is likely to be larger. Second, harmonization will have to be done for the year 2010, meaning there will have been much less time for relaxation to smooth away artifacts.
 
 ```{r, rescale-LUH2, echo=FALSE, cache=TRUE}
-source("harmonize_with_luh2_2010.R")
 historic_annual_area_aim <- 
   harmonize_with_luh2_2010("output/ena/ENA-AIM-RCPref_SSP2_BID-12Feb2020_FinalMask.nc", "AIM")
 
@@ -142,7 +144,7 @@ For each AIM scenario, the effective natural area (ENA) layers from 2010 to 2100
 
 Each scenario's results are shown in three ways: a graph of the losses of ENA and endemic species from 2020-2100, expressed as percentages of the levels in 2020; a map of extinctions projected to take place between 2020 and 2100; and a summary of the relative numbers of endemics remaining in different selected years.
 
-```{r, relax_to_2100, echo=FALSE, warning=FALSE, cache=TRUE}
+```{r relax_to_2100, warning=FALSE, cache=TRUE, echo=FALSE}
 aim_files <- c("ENA-AIM-RCPref_SSP2_BID-12Feb2020_FinalMask.nc",
                  "ENA-AIM-RCPref_SSP2_CRJ-12Feb2020_FinalMask.nc",
                  "ENA-AIM-RCPref_SSP2_GDN-12Feb2020_FinalMask.nc",
@@ -194,25 +196,25 @@ for (i in 1:length(aim_files)){
 The results are most naturally expressed as cumulative numbers of extinctions over time, on a relative scale.
 
 ```{r, harvest-results, echo=FALSE, warning=FALSE, cache=TRUE}
-image_projections <- data.frame(year = c(2010:2100))
-image_projections$BID <- readRDS(file.path("output/endemics","asluAIM_BID-12Feb2020_FinalMask.nc.Rds"))
-image_projections$CRJ <- readRDS(file.path("output/endemics","asluAIM_CRJ-12Feb2020_FinalMask.nc.Rds"))
-image_projections$GDN <- readRDS(file.path("output/endemics","asluAIM_GDN-12Feb2020_FinalMask.nc.Rds"))
-image_projections$HPR <- readRDS(file.path("output/endemics","asluAIM_HPR-12Feb2020_FinalMask.nc.Rds"))
-image_projections$NRS <- readRDS(file.path("output/endemics","asluAIM_NRS-12Feb2020_FinalMask.nc.Rds"))
-image_projections$THC <- readRDS(file.path("output/endemics","asluAIM_THC-12Feb2020_FinalMask.nc.Rds"))
-image_projections$WAC <- readRDS(file.path("output/endemics","asluAIM_WAC-12Feb2020_FinalMask.nc.Rds"))
+aim_projections <- data.frame(year = c(2010:2100))
+aim_projections$BID <- readRDS(file.path("output/endemics","aslu_AIMBID-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$CRJ <- readRDS(file.path("output/endemics","aslu_AIMCRJ-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$GDN <- readRDS(file.path("output/endemics","aslu_AIMGDN-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$HPR <- readRDS(file.path("output/endemics","aslu_AIMHPR-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$NRS <- readRDS(file.path("output/endemics","aslu_AIMNRS-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$THC <- readRDS(file.path("output/endemics","aslu_AIMTHC-12Feb2020_FinalMask.nc.Rds"))
+aim_projections$WAC <- readRDS(file.path("output/endemics","aslu_AIMWAC-12Feb2020_FinalMask.nc.Rds"))
 
-image_projections <- subset(image_projections, year >= 2020)
+aim_projections <- subset(aim_projections, year >= 2020)
 
 for(i in 2:8){
-  image_projections[,i] <- image_projections[1,i] - image_projections[,i]
+  aim_projections[,i] <- aim_projections[1,i] - aim_projections[,i]
 } 
 
-toll <- max(image_projections[,c(2:8)])
-image_projections[,c(2:8)] <- 100*image_projections[, c(2:8)]/toll
+toll <- max(aim_projections[,c(2:8)])
+aim_projections[,c(2:8)] <- 100*aim_projections[, c(2:8)]/toll
 
-plot(BID ~ year, data=image_projections, col="red", type="l", ylim=c(0,100),
+plot(BID ~ year, data=aim_projections, col="red", type="l", ylim=c(0,100),
      ylab="Extinctions since 2020 (relative)", xlab="Year", cex.lab=1.3)
 text(2020, 95, adj=0, "Key to scenarios:")
 text(2020, 90, adj=0, "NRS", col="blue")
@@ -223,15 +225,15 @@ text(2020, 70, adj=0, "BID", col="red")
 text(2020, 65, adj=0, "GDN", col="yellow")
 text(2020, 60, adj=0, "HPR", col="green")
 
-lines(CRJ ~ year, data=image_projections, col="orange", type="l")
-lines(GDN ~ year, data=image_projections, col="yellow", type="l")
-lines(HPR ~ year, data=image_projections, col="green", type="l")
-lines(NRS ~ year, data=image_projections, col="blue", type="l")
-lines(THC ~ year, data=image_projections, col="darkblue", type="l")
-lines(WAC ~ year, data=image_projections, col="violet", type="l")
+lines(CRJ ~ year, data=aim_projections, col="orange", type="l")
+lines(GDN ~ year, data=aim_projections, col="yellow", type="l")
+lines(HPR ~ year, data=aim_projections, col="green", type="l")
+lines(NRS ~ year, data=aim_projections, col="blue", type="l")
+lines(THC ~ year, data=aim_projections, col="darkblue", type="l")
+lines(WAC ~ year, data=aim_projections, col="violet", type="l")
 
 
-saveRDS(image_projections, "output/endemics/image_projections.Rds")
+saveRDS(aim_projections, "output/endemics/aim_projections.Rds")
 ```
 
 ## Package version info

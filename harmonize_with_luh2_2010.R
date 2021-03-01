@@ -23,7 +23,7 @@ harmonize_with_luh2_2010 <- function(iam_file, which_iam){
   meld_year <- 2010 
   iam_ena <- stack(iam_file)
   iam_target <- subset(iam_ena, 1) #It is the first layer we harmonize on
-  luh2_0 <- subset(luh2_area, 1)
+  luh2_0 <- subset(luh2_ena, 1)
   luh2_target <- subset(luh2_ena, which(luh2_years == 2010))
   
   diff <- iam_target-luh2_target

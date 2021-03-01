@@ -284,15 +284,26 @@ for (i in 1:5){
 }
 
 ```
-## Next steps
 
-I wonder whether it's possible that one of the scenarios didn't get one of the input layers incorporated into it in the first place, or multiplied by the 'wrong' cell area raster, perhaps explaining how the ENA shows a 'deficit' for the Andes despite there not being anything evident in the netCDFs. That at least seems worth looking into next.
+## Is the issue caused by aggregation of complex landscapes to a coarse scale
 
-Looking into the BID IMAGE data, there's a huge disjunction in the managed forest between 2020 and 2025, with 100 Mha being lost. If that's being lost in the areas where endemic richness then fell, I have a likely explanation for what's gone on.
+In the Andes, the topographic heterogeneity means that in practice a single 2$^\circ$ grid cell will contain potentially many more or less distinct natural ecosystems. If some of these are endemism hotspots while others are potentially productive but not rich in endemics, perhaps the coarsening to 2$^\circ$ conflates endemism and productivity, mistakenly giving the impression that the productive land could -- if managed suitably -- support the endemics.
 
-Looking more closely, there's a lot of managed forest that becomes abandoned managed forest, and which then gets a \emph{lower} BII value as a result. I have therefore edited convert_iam_data.R so that the BII coefficient for abandoned managed forest is at least as high as that for managed forest. However, this hasn't made any real difference (the global ENA through time is barely different, and it does not remove the big differences in 2030 ENA between CRJ and HPR).
+```{r, range-size-rarity, echo=FALSE, cache=TRUE}
+log_rsr <- log(raster("data/RSR_all.tif"))
+nested_raster <- disaggregate(cell_area_raster, fact=44)
+nested_rsr <- exp(resample(log_rsr, nested_raster))
+rsr <- aggregate(nested_rsr, fact=11)
+plot(rsr, main="Range-size rarity summed within 0.5-degree grid cells")
 
-What is causing the difference in the Andes in 2030?
+par(mfrow=c(1,1))
+bluered.plot(subset(g_CRJ,i), subset(g_HPR, i), main="CRJ - HPR: grassland",
+             xlim=c(-85,-50), ylim=c(-15, 10))
+
+plot(rsr, main="Range-size rarity summed within 0.5-degree grid cells", 
+     xlim=c(-85,-50), ylim=c(-15, 10))
+
+```
 
 
 ```{r recalculate-ENA-and-compare, echo=FALSE, cache=TRUE}

@@ -1,7 +1,7 @@
 ---
 title: "Using the IMAGE historical data"
 author: "Andy Purvis"
-date: "18/02/2021"
+date: "01/03/2021"
 output:
   html_document: 
     df_print: paged
@@ -23,7 +23,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Using the IMAGE historical data
 
-THIS RUN IS A SENSITIVITY ANALYSIS USING SQRT(RSR)
 David LeClere has shared with me a 30-by-30-compatible historical land-use netCDF going back to 1970. This is appealing for two main reasons. First, IMAGE provides a better match to the LUH2 data in 2010 than do the other IAMs (MAgPIE, AIM and GLOBIOM). Second, 1970 is a full half-life before the present, de-emphasizing artifacts caused by having to harmonize incongruent land-use trajectories.
 
 This code has the following objectives:
@@ -61,10 +60,10 @@ source("convert_iam_data.R")
 ```
 ## Read in range-size rarity to assess how badly mismatches between IMAGE and LUH2 might matter
 
-Difficulties harmonizing the data on effective natural area matter more in regions with considerable range-size rarity, as these are the places where extinction debt could be artificially inflated by mismatches. The range-size rarity layer is also used in the dynamic species-area modelling, as a proxy for the geographic pattern of diversity of habitat-specialist endemics in the year 2015.
+Difficulties harmonizing the data on effective natural area matter more in regions with considerable range-size rarity, as these are the places where extinction debt could be artificially inflated by mismatches. The range-size rarity layer is also used in the dynamic species-area modelling, as a proxy for the geographic pattern of diversity of habitat-specialist endemics in the year 2015. The square root of range size rarity has, in other runs, been used as a robustness check; but this run does not use it.
 
 ```{r, range-size-rarity, echo=FALSE, cache=TRUE}
-rsr <- raster("output/rsr2.nc") # Generated as part of De Palma et al. (in prep.), as the sum of the 44 grid cells per 2-degree cell
+rsr <- raster("output/rsr.nc") # Generated as part of De Palma et al. (in prep.), as the sum of the 44 grid cells per 2-degree cell
 
 rsr_rescaled <- rsr/cellStats(rsr, "mean")
 plot(rsr_rescaled, main="Relative range-size rarity per 2-degree grid cell in 2015")
@@ -290,4 +289,9 @@ hh <- tail(endemics_hist, 11)
 ss <- endemics_scen[1:11]
 plot(hh, ss)
 abline(a=0,b=1)
+```
+## Package version info
+
+```{r, session-info, echo=FALSE, cache=FALSE}
+utils::sessionInfo()
 ```
